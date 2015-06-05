@@ -1,6 +1,7 @@
 package com.oansari.spotifystreamer.views;
 
 import android.app.Activity;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
@@ -14,13 +15,24 @@ import android.widget.ProgressBar;
 import com.oansari.spotifystreamer.R;
 import com.oansari.spotifystreamer.Spotify;
 import com.oansari.spotifystreamer.adapters.AtristListAdapter;
-import com.oansari.spotifystreamer.models.Artist;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import kaaes.spotify.webapi.android.SpotifyApi;
+import kaaes.spotify.webapi.android.SpotifyCallback;
+import kaaes.spotify.webapi.android.SpotifyError;
+import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.Album;
+import kaaes.spotify.webapi.android.models.Artist;
+import kaaes.spotify.webapi.android.models.Artists;
+import kaaes.spotify.webapi.android.models.ArtistsPager;
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 
 public class MainActivity extends Activity {
@@ -29,8 +41,11 @@ public class MainActivity extends Activity {
     long last_text_edit = 0;
     Handler h = new Handler();
     boolean already_queried = false;
-
+    List<Artist> mArtists = new ArrayList<>();
     AtristListAdapter adapter;
+
+    SpotifyApi mSpotifyApi;
+    SpotifyService mSpotifyService;
 
     @InjectView(R.id.listView)
     ListView mlistView;
@@ -47,23 +62,33 @@ public class MainActivity extends Activity {
         ButterKnife.inject(this);
         mlistView.setVisibility(View.INVISIBLE);
         mProgressBar.setVisibility(View.INVISIBLE);
-        Spotify spotify = new Spotify();
+        final Spotify spotify = new Spotify();
 
-        List<Artist> artists = new ArrayList<Artist>();
-        artists.add(new Artist("image.png", "Osama"));
-        artists.add(new Artist("image.png", "Shooq"));
-        artists.add(new Artist("image.png", "Dona"));
-        adapter = new AtristListAdapter(this, artists);
-        mlistView.setAdapter(adapter);
+        mSpotifyApi = new SpotifyApi();
+        //mSpotifyApi.setAccessToken("40b40bec089a4cd6947c626dcd3f5a08");
+
+        mSpotifyService = mSpotifyApi.getService();
+
 
         mFilterEditText.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if (charSequence.length() > 0) {
+                    mProgressBar.setVisibility(View.VISIBLE);
+                    mlistView.setVisibility(View.INVISIBLE);
+
+                }else {
+                    mArtists.clear();
+                    updateList();
+                    mProgressBar.setVisibility(View.INVISIBLE);
+                    mlistView.setVisibility(View.VISIBLE);
+                }
                 already_queried = false;
-                MainActivity.this.adapter.getFilter().filter(charSequence);
+                //MainActivity.this.adapter.getFilter().filter(charSequence);
             }
 
             @Override
@@ -72,19 +97,13 @@ public class MainActivity extends Activity {
                 h.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        if(System.currentTimeMillis() > (last_text_edit + idle_min - 500)){
+                        if (System.currentTimeMillis() > (last_text_edit + idle_min - 500)) {
                             // user hasn't changed the EditText for longer than
                             // the min delay (with half second buffer window)
-                            if (!already_queried) { // don't do this stuff twice.
-                                already_queried = true;
+                            if (mFilterEditText.getText().toString().length() > 0) {
                                 mProgressBar.setVisibility(View.VISIBLE);
-                                try {
-                                    Thread.sleep(5000);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                mProgressBar.setVisibility(View.INVISIBLE);
-                                mlistView.setVisibility(View.VISIBLE);
+                                new FetchSpotifyData().execute();
+
                                 Log.d("Time Elapsed", "User stopped typing");  // your queries
                             }
                         }
@@ -94,6 +113,13 @@ public class MainActivity extends Activity {
         });
 
 
+
+    }
+
+    private void updateList() {
+            adapter = new AtristListAdapter(this, mArtists);
+            mlistView.setAdapter(adapter);
+            adapter.notifyDataSetChanged();
     }
 
 //    @Override
@@ -117,4 +143,34 @@ public class MainActivity extends Activity {
 //
 //        return super.onOptionsItemSelected(item);
 //    }
+
+    private class FetchSpotifyData extends AsyncTask{
+
+        @Override
+        protected Object doInBackground(Object... objects) {
+            mSpotifyService.searchArtists(mFilterEditText.getText().toString(), new Callback<ArtistsPager>() {
+                @Override
+                public void success(ArtistsPager artistsPager, Response response) {
+                    mArtists = artistsPager.artists.items;
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateList();
+                            mProgressBar.setVisibility(View.INVISIBLE);
+                            if (mArtists.size() > 0)
+                                mlistView.setVisibility(View.VISIBLE);
+                            else
+
+                        }
+                    });
+                }
+
+                @Override
+                public void failure(RetrofitError error) {
+                    //TODO Handle Failure
+                }
+            });
+            return null;
+        }
+    }
 }

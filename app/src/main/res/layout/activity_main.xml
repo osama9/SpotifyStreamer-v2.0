@@ -16,8 +16,9 @@
         android:layout_centerHorizontal="true"
         />
     <ProgressBar
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_alignRight="@id/filterEditText"
         android:id="@+id/progressBar"/>
     <ListView
         android:layout_width="match_parent"
