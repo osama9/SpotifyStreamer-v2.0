@@ -1,6 +1,7 @@
 package com.oansari.spotifystreamer.views;
 
 import android.app.Activity;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -13,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -61,12 +63,8 @@ public class ArtistListFragment extends Fragment {
     @InjectView(R.id.notFoundTextView)
     TextView mNotFoundTextView;
 
-
-
-    Context mContext;
-
     public ArtistListFragment(){}
-
+    private OnFragmentInteractionListener mListener;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -122,6 +120,12 @@ public class ArtistListFragment extends Fragment {
         });
 
 
+        mlistView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                mListener.onFragmentInteraction(i);
+            }
+        });
 
         return view;
     }
@@ -130,22 +134,22 @@ public class ArtistListFragment extends Fragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
 
-        mContext = activity;
-
+        super.onAttach(activity);
+        try {
+            mListener = (OnFragmentInteractionListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
 
         final Spotify spotify = new Spotify();
 
         mSpotifyApi = new SpotifyApi();
-        //mSpotifyApi.setAccessToken("40b40bec089a4cd6947c626dcd3f5a08");
-
         mSpotifyService = mSpotifyApi.getService();
-
-
-
     }
 
     private void updateList() {
-        adapter = new AtristListAdapter(mContext, mArtists);
+        adapter = new AtristListAdapter(getActivity(), mArtists);
         mlistView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
     }
@@ -180,5 +184,20 @@ public class ArtistListFragment extends Fragment {
             });
             return null;
         }
+    }
+
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     * <p/>
+     * See the Android Training lesson <a href=
+     * "http://developer.android.com/training/basics/fragments/communicating.html"
+     * >Communicating with Other Fragments</a> for more information.
+     */
+    public interface OnFragmentInteractionListener {
+        // TODO: Update argument type and name
+        public void onFragmentInteraction(int position);
     }
 }

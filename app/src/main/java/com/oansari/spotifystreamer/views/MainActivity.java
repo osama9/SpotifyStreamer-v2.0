@@ -1,6 +1,7 @@
 package com.oansari.spotifystreamer.views;
 
 import android.app.Activity;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -12,6 +13,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.oansari.spotifystreamer.R;
 import com.oansari.spotifystreamer.Spotify;
@@ -36,17 +38,35 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements ArtistListFragment.OnFragmentInteractionListener, TopTracksFragment.OnFragmentInteractionListener {
 
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ArtistListFragment artistListFragment = new ArtistListFragment();
         setContentView(R.layout.activity_main);
+        getFragmentManager().beginTransaction()
+                .replace(R.id.fragment, artistListFragment)
+                .addToBackStack(null)
+                .commit();
 
     }
 
+    @Override
+    public void onFragmentInteraction(int position) {
+        TopTracksFragment topTracksFragment = TopTracksFragment.newInstance("","");
+        getFragmentManager().beginTransaction()
+                .replace(R.id.fragment, topTracksFragment)
+                .addToBackStack(null)
+                .commit();
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
+    }
 
 
 //    @Override
