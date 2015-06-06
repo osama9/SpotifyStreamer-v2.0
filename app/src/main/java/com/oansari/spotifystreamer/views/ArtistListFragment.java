@@ -64,7 +64,7 @@ public class ArtistListFragment extends Fragment {
     TextView mNotFoundTextView;
 
     public ArtistListFragment(){}
-    private OnFragmentInteractionListener mListener;
+    private OnArtistListFragmentInteractionListener mListener;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -123,7 +123,8 @@ public class ArtistListFragment extends Fragment {
         mlistView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                mListener.onFragmentInteraction(i);
+                Artist artist = (Artist) adapterView.getItemAtPosition(i);
+                mListener.OnArtistListFragmentInteractionListener(artist);
             }
         });
 
@@ -133,10 +134,8 @@ public class ArtistListFragment extends Fragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-
-        super.onAttach(activity);
         try {
-            mListener = (OnFragmentInteractionListener) activity;
+            mListener = (OnArtistListFragmentInteractionListener) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -196,8 +195,8 @@ public class ArtistListFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener {
+    public interface OnArtistListFragmentInteractionListener {
         // TODO: Update argument type and name
-        public void onFragmentInteraction(int position);
+        public void OnArtistListFragmentInteractionListener(Artist artist);
     }
 }
