@@ -63,8 +63,19 @@ public class ArtistListFragment extends Fragment {
     @InjectView(R.id.notFoundTextView)
     TextView mNotFoundTextView;
 
+    boolean stopTextWatcher = false;
+
     public ArtistListFragment(){}
     private OnArtistListFragmentInteractionListener mListener;
+
+    public static ArtistListFragment newInstance() {
+        ArtistListFragment fragment = new ArtistListFragment();
+        Bundle args = new Bundle();
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -74,6 +85,7 @@ public class ArtistListFragment extends Fragment {
         ButterKnife.inject(this, view);
         mlistView.setVisibility(View.INVISIBLE);
         mProgressBar.setVisibility(View.INVISIBLE);
+
 
 
         mFilterEditText.addTextChangedListener(new TextWatcher() {
@@ -100,22 +112,26 @@ public class ArtistListFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                last_text_edit = System.currentTimeMillis();
-                h.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (System.currentTimeMillis() > (last_text_edit + idle_min - 500)) {
-                            // user hasn't changed the EditText for longer than
-                            // the min delay (with half second buffer window)
-                            if (mFilterEditText.getText().toString().length() > 0) {
-                                mProgressBar.setVisibility(View.VISIBLE);
-                                new FetchSpotifyData().execute();
+                if (!stopTextWatcher){
+                    last_text_edit = System.currentTimeMillis();
+                    h.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (System.currentTimeMillis() > (last_text_edit + idle_min - 500)) {
+                                // user hasn't changed the EditText for longer than
+                                // the min delay (with half second buffer window)
+                                if (mFilterEditText.getText().toString().length() > 0) {
+                                    mProgressBar.setVisibility(View.VISIBLE);
+                                    new FetchSpotifyData().execute();
 
-                                Log.d("Time Elapsed", "User stopped typing");  // your queries
+                                    Log.d("Time Elapsed", "User stopped typing");  // your queries
+                                }
                             }
                         }
-                    }
-                }, idle_min);
+                    }, idle_min);
+                }
+                else
+                    stopTextWatcher = false;
             }
         });
 
@@ -123,6 +139,7 @@ public class ArtistListFragment extends Fragment {
         mlistView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                stopTextWatcher = true;
                 Artist artist = (Artist) adapterView.getItemAtPosition(i);
                 mListener.OnArtistListFragmentInteractionListener(artist);
             }
@@ -130,6 +147,8 @@ public class ArtistListFragment extends Fragment {
 
         return view;
     }
+
+
 
     @Override
     public void onAttach(Activity activity) {

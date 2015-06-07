@@ -69,7 +69,16 @@ public class TopTracksFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_top_tracks, container, false);
         TextView tv = (TextView) view.findViewById(R.id.tv);
         tv.setText(mParam1);
+        getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActivity().getActionBar().setSubtitle(mParam1);
         return view;
+    }
+
+    @Override
+    public void onStop() {
+        getActivity().getActionBar().setSubtitle("");
+        getActivity().getActionBar().setDisplayHomeAsUpEnabled(false);
+        super.onStop();
     }
 
     // TODO: Rename method, update argument and hook method into UI event

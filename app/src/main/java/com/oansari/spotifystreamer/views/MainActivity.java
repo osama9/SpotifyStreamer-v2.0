@@ -1,7 +1,10 @@
 package com.oansari.spotifystreamer.views;
 import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.MenuItem;
 
 import com.oansari.spotifystreamer.R;
 
@@ -9,17 +12,48 @@ import kaaes.spotify.webapi.android.models.Artist;
 
 public class MainActivity extends Activity implements ArtistListFragment.OnArtistListFragmentInteractionListener, TopTracksFragment.OnTopTracksFragmentInteractionListener {
 
-
-
+    ArtistListFragment artistListFragment;
+    String ARTISTS_LIST_TAG = "ArtistsListFragment";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ArtistListFragment artistListFragment = new ArtistListFragment();
+        artistListFragment = ArtistListFragment.newInstance();
         setContentView(R.layout.activity_main);
         getFragmentManager().beginTransaction()
-                .add(R.id.fragment, artistListFragment)
-                .addToBackStack(null)
+                .add(R.id.fragment, artistListFragment, ARTISTS_LIST_TAG)
+                .addToBackStack(ARTISTS_LIST_TAG)
                 .commit();
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case android.R.id.home:
+                //manageActionBar();
+                FragmentManager fm = getFragmentManager();
+                fm.popBackStack();
+
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+
+        }
+
+    }
+
+    private void manageActionBar() {
+        String str=getFragmentManager().getBackStackEntryAt(getFragmentManager().getBackStackEntryCount()-2).getName();
+        Fragment fragment=getFragmentManager().findFragmentByTag(str);
+        if(fragment.getClass().getName() == ArtistListFragment.newInstance().getClass().getName())
+            getActionBar().setDisplayHomeAsUpEnabled(false);
+    }
+
+    @Override
+    public void onBackPressed() {
+        //manageActionBar();
+        super.onBackPressed();
+
 
     }
 
@@ -27,7 +61,8 @@ public class MainActivity extends Activity implements ArtistListFragment.OnArtis
     public void OnArtistListFragmentInteractionListener(Artist artist) {
         TopTracksFragment topTracksFragment = TopTracksFragment.newInstance(artist.id);
         getFragmentManager().beginTransaction()
-                .replace(R.id.fragment, topTracksFragment)
+                .hide(artistListFragment)
+                .add(R.id.fragment, topTracksFragment)
                 .addToBackStack(null)
                 .commit();
     }
