@@ -11,8 +11,6 @@ import android.widget.TextView;
 
 import com.oansari.spotifystreamer.R;
 
-import kaaes.spotify.webapi.android.models.Artist;
-
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
@@ -24,28 +22,24 @@ import kaaes.spotify.webapi.android.models.Artist;
 public class TopTracksFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private static final String ARG_ARTIST_ID = "artistID";
 
     // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private String mArtistId;
 
     private OnTopTracksFragmentInteractionListener mListener;
 
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
+
      * @return A new instance of fragment TopTracksFragment.
      */
     // TODO: Rename and change types and number of parameters
     public static TopTracksFragment newInstance(String artistID) {
         TopTracksFragment fragment = new TopTracksFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, artistID);
+        args.putString(ARG_ARTIST_ID, artistID);
         fragment.setArguments(args);
         return fragment;
     }
@@ -58,7 +52,7 @@ public class TopTracksFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
+            mArtistId = getArguments().getString(ARG_ARTIST_ID);
         }
     }
 
@@ -68,9 +62,9 @@ public class TopTracksFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_top_tracks, container, false);
         TextView tv = (TextView) view.findViewById(R.id.tv);
-        tv.setText(mParam1);
+        tv.setText(mArtistId);
         getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
-        getActivity().getActionBar().setSubtitle(mParam1);
+        getActivity().getActionBar().setSubtitle(mArtistId);
         return view;
     }
 
@@ -117,7 +111,7 @@ public class TopTracksFragment extends Fragment {
      */
     public interface OnTopTracksFragmentInteractionListener {
         // TODO: Update argument type and name
-        public void OnTopTracksFragmentInteractionListener(Uri uri);
+         void OnTopTracksFragmentInteractionListener(Uri uri);
     }
 
 }

@@ -54,7 +54,7 @@ public class ArtistListFragment extends Fragment {
     SpotifyApi mSpotifyApi;
     SpotifyService mSpotifyService;
 
-    @InjectView(R.id.listView)
+    @InjectView(R.id.artistsListView)
     ListView mlistView;
     @InjectView(R.id.filterEditText)
     EditText mFilterEditText;
@@ -216,6 +216,6 @@ public class ArtistListFragment extends Fragment {
      */
     public interface OnArtistListFragmentInteractionListener {
         // TODO: Update argument type and name
-        public void OnArtistListFragmentInteractionListener(Artist artist);
+        void OnArtistListFragmentInteractionListener(Artist artist);
     }
 }
