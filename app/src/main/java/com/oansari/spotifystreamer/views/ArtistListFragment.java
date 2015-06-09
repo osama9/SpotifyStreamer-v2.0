@@ -160,10 +160,10 @@ public class ArtistListFragment extends Fragment {
                     + " must implement OnFragmentInteractionListener");
         }
 
-        final Spotify spotify = new Spotify();
 
         mSpotifyApi = new SpotifyApi();
         mSpotifyService = mSpotifyApi.getService();
+
     }
 
     private void updateList() {
@@ -176,7 +176,7 @@ public class ArtistListFragment extends Fragment {
 
         @Override
         protected Object doInBackground(Object... objects) {
-            mSpotifyService.searchArtists(mFilterEditText.getText().toString(), new Callback<ArtistsPager>() {
+            Spotify.instance().mSpotifyService.searchArtists(mFilterEditText.getText().toString(), new Callback<ArtistsPager>() {
                 @Override
                 public void success(ArtistsPager artistsPager, Response response) {
                     mArtists = artistsPager.artists.items;

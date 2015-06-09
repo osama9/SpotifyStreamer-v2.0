@@ -22,42 +22,19 @@ import retrofit.client.Response;
  */
 public class Spotify {
     SpotifyApi mSpotifyApi;
-    SpotifyService mSpotifyService;
+    public SpotifyService mSpotifyService;
+    static Spotify mInstance;
     public Spotify(){
         mSpotifyApi = new SpotifyApi();
-        //mSpotifyApi.setAccessToken("40b40bec089a4cd6947c626dcd3f5a08");
-
         mSpotifyService = mSpotifyApi.getService();
-
-
+        String g  = mSpotifyService.COUNTRY;
     }
 
-    public List<Artist> searchArtist(final String artistName) {
-        final List<Artist>[] artistsResult = new ArrayList[1];
+    public static Spotify instance(){
+        if (mInstance == null){
+            mInstance = new Spotify();
+        }
+        return mInstance;
 
-        mSpotifyService.searchArtists(artistName, new Callback<ArtistsPager>() {
-            @Override
-            public void success(ArtistsPager artistsPager, Response response) {
-                mSpotifyService.getArtists(artistName, new Callback<Artists>() {
-
-                    @Override
-                    public void success(Artists artists, Response response) {
-                        artistsResult[0] = artists.artists;
-                    }
-
-                    @Override
-                    public void failure(RetrofitError error) {
-                        //TODO Handle Failure
-                    }
-                });
-
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-                //TODO Handle Failure
-            }
-        });
-        return artistsResult[0];
     }
 }

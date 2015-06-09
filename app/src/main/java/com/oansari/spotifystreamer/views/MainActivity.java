@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.MenuItem;
 
 import com.oansari.spotifystreamer.R;
@@ -42,24 +43,23 @@ public class MainActivity extends Activity implements ArtistListFragment.OnArtis
 
     }
 
-    private void manageActionBar() {
-        String str=getFragmentManager().getBackStackEntryAt(getFragmentManager().getBackStackEntryCount()-2).getName();
-        Fragment fragment=getFragmentManager().findFragmentByTag(str);
-        if(fragment.getClass().getName() == ArtistListFragment.newInstance().getClass().getName())
-            getActionBar().setDisplayHomeAsUpEnabled(false);
-    }
-
     @Override
-    public void onBackPressed() {
-        //manageActionBar();
-        super.onBackPressed();
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
 
+        if( keyCode== KeyEvent.KEYCODE_BACK)
+        {
+
+            ArtistListFragment artistListFragment = (ArtistListFragment)getFragmentManager().findFragmentByTag(ARTISTS_LIST_TAG);
+            if (artistListFragment != null && artistListFragment.isVisible())
+                finish();
+        }
+
+        return super.onKeyDown(keyCode, event);
 
     }
-
     @Override
     public void OnArtistListFragmentInteractionListener(Artist artist) {
-        TopTracksFragment topTracksFragment = TopTracksFragment.newInstance(artist.id);
+        TopTracksFragment topTracksFragment = TopTracksFragment.newInstance(artist.id, artist.name);
         getFragmentManager().beginTransaction()
                 .hide(artistListFragment)
                 .add(R.id.fragment, topTracksFragment)
