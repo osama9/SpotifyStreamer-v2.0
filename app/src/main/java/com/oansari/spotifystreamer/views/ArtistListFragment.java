@@ -44,7 +44,7 @@ import retrofit.client.Response;
  * create an instance of this fragment.
  */
 public class ArtistListFragment extends Fragment {
-    long idle_min = 4000; // 4 seconds after user stops typing
+    long idle_min = 2000; // 2 seconds after user stops typing
     long last_text_edit = 0;
     Handler h = new Handler();
     boolean already_queried = false;
@@ -75,7 +75,11 @@ public class ArtistListFragment extends Fragment {
         return fragment;
     }
 
-
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -86,7 +90,26 @@ public class ArtistListFragment extends Fragment {
         mlistView.setVisibility(View.INVISIBLE);
         mProgressBar.setVisibility(View.INVISIBLE);
 
+        watchSearchEditText(savedInstanceState);
 
+        mlistView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                stopTextWatcher = true;
+                Artist artist = (Artist) adapterView.getItemAtPosition(i);
+                mListener.OnArtistListFragmentInteractionListener(artist);
+            }
+        });
+
+        if(mArtists.size() > 0)
+            updateList();
+
+        return view;
+    }
+
+
+
+    private void watchSearchEditText(final Bundle savedInstanceState) {
 
         mFilterEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -95,16 +118,27 @@ public class ArtistListFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if (charSequence.length() > 0) {
+                String existingKeyword = null;
+                String newKeyword= null;
+
+                if(savedInstanceState != null)
+                    existingKeyword = savedInstanceState.getString("keyword");
+                if(charSequence != null)
+                    newKeyword = charSequence.toString();
+                if (charSequence.length() > 0 && !newKeyword.equals(existingKeyword)) {
                     mProgressBar.setVisibility(View.VISIBLE);
                     mlistView.setVisibility(View.INVISIBLE);
+                    stopTextWatcher = false;
 
                 } else {
-                    mArtists.clear();
+                    if(charSequence.length() == 0)
+                        mArtists.clear();
+
                     updateList();
                     mNotFoundTextView.setVisibility(View.INVISIBLE);
                     mProgressBar.setVisibility(View.INVISIBLE);
                     mlistView.setVisibility(View.VISIBLE);
+                    stopTextWatcher = true;
                 }
                 already_queried = false;
                 //MainActivity.this.adapter.getFilter().filter(charSequence);
@@ -112,7 +146,7 @@ public class ArtistListFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                if (!stopTextWatcher){
+                if (!stopTextWatcher ){
                     last_text_edit = System.currentTimeMillis();
                     h.postDelayed(new Runnable() {
                         @Override
@@ -134,21 +168,14 @@ public class ArtistListFragment extends Fragment {
                     stopTextWatcher = false;
             }
         });
-
-
-        mlistView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                stopTextWatcher = true;
-                Artist artist = (Artist) adapterView.getItemAtPosition(i);
-                mListener.OnArtistListFragmentInteractionListener(artist);
-            }
-        });
-
-        return view;
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putString("keyword", mFilterEditText.getText().toString());
+        super.onSaveInstanceState(outState);
 
+    }
 
     @Override
     public void onAttach(Activity activity) {

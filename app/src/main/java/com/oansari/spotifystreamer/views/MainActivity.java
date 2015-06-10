@@ -18,12 +18,19 @@ public class MainActivity extends Activity implements ArtistListFragment.OnArtis
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         artistListFragment = ArtistListFragment.newInstance();
         setContentView(R.layout.activity_main);
-        getFragmentManager().beginTransaction()
-                .add(R.id.fragment, artistListFragment, ARTISTS_LIST_TAG)
-                .addToBackStack(ARTISTS_LIST_TAG)
-                .commit();
+        if(savedInstanceState == null) {
+            getFragmentManager().beginTransaction()
+                    .add(R.id.fragment, artistListFragment, ARTISTS_LIST_TAG)
+                    .addToBackStack(ARTISTS_LIST_TAG)
+                    .commit();
+        }
+        else{
+            FragmentManager fm = getFragmentManager();
+            artistListFragment = (ArtistListFragment) fm.findFragmentByTag(ARTISTS_LIST_TAG);
+        }
 
     }
 

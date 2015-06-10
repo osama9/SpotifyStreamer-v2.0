@@ -82,6 +82,7 @@ public class TopTracksFragment extends Fragment {
             mArtistId = getArguments().getString(ARG_ARTIST_ID);
             mArtistName = getArguments().getString(ARG_ARTIST_NAME);
         }
+        setRetainInstance(true);
 
     }
 
