@@ -3,8 +3,9 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-    <string name="not_found_message">Sorry, there is no artist with this name</string>
+    <string name="artist_not_found_message">Sorry, there is no artist with this name</string>
 
 <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="tracks_not_found_message">We can\'t find the top tracks for the selected artist</string>
 </resources>

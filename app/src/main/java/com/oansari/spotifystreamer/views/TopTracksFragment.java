@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.oansari.spotifystreamer.R;
@@ -42,6 +43,12 @@ public class TopTracksFragment extends Fragment {
 
     @InjectView(R.id.topTracksListView)
     ListView mTopTracksListView;
+
+    @InjectView(R.id.progressBar)
+    ProgressBar mProgressBar;
+
+    @InjectView(R.id.notFoundTextView)
+    TextView mNotFoundTextView;
 
     // TODO: Rename and change types of parameters
     private String mArtistId;
@@ -86,6 +93,7 @@ public class TopTracksFragment extends Fragment {
         ButterKnife.inject(this, view);
         getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
         getActivity().getActionBar().setSubtitle(mArtistName);
+        mProgressBar.setVisibility(View.VISIBLE);
         new FetchSpotifyData().execute();
         return view;
     }
@@ -150,11 +158,19 @@ public class TopTracksFragment extends Fragment {
 
             Spotify.instance().mSpotifyService.getArtistTopTrack(mArtistId, new Callback<Tracks>() {
                 @Override
-                public void success(Tracks tracks, Response response) {
+                public void success(final Tracks tracks, Response response) {
                     mTracks = tracks;
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            mProgressBar.setVisibility(View.INVISIBLE);
+                            if(tracks.tracks.size() == 0) {
+                                mNotFoundTextView.setVisibility(View.VISIBLE);
+                                mTopTracksListView.setVisibility(View.INVISIBLE);
+                            }else{
+                                mNotFoundTextView.setVisibility(View.INVISIBLE);
+                                mTopTracksListView.setVisibility(View.VISIBLE);
+                            }
                             updateList();
                         }
                     });

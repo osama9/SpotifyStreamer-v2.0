@@ -28,7 +28,7 @@
         android:layout_centerVertical="true"
         android:visibility="invisible"
         android:id="@+id/notFoundTextView"
-        android:text="@string/not_found_message"/>
+        android:text="@string/artist_not_found_message"/>
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"

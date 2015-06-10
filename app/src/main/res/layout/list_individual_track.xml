@@ -17,26 +17,43 @@
 
     </LinearLayout>
 
-        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                      android:layout_width="match_parent"
-                      android:layout_height="wrap_content"
-                      android:padding="@dimen/activity_horizontal_margin"
-            >
-            <ImageView
-                android:layout_width="@dimen/list_artist_width"
-                android:layout_height="@dimen/list_artist_height"
-                android:id="@+id/artist_image"
-                android:src="@mipmap/ic_launcher"/>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:padding="@dimen/activity_horizontal_margin"
+        >
+        <ImageView
+            android:layout_width="@dimen/list_artist_width"
+            android:layout_height="@dimen/list_artist_height"
+            android:id="@+id/track_image"
+            android:src="@mipmap/ic_launcher"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:id="@+id/artist_name"
-                android:layout_gravity="center_vertical"
-                android:paddingLeft="24dp"
-                android:gravity="center_vertical"/>
+        <LinearLayout
+            android:orientation="vertical"
+            android:paddingTop="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/track_name"
+            android:layout_gravity="center_vertical"
+            android:text="Track Name"
+            android:textSize="@dimen/main_font_size"
+            android:paddingLeft="24dp"
+            android:gravity="center_vertical"/>
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@+id/album_name"
+            android:layout_gravity="center_vertical"
+            android:textSize="@dimen/sub_font_size"
+            android:text="Album Name"
+            android:paddingLeft="24dp"
+            android:gravity="center_vertical"/>
+</LinearLayout>
 
-        </LinearLayout>
+    </LinearLayout>
 
 </LinearLayout>

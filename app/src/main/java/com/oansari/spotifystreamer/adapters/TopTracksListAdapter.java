@@ -54,7 +54,7 @@ public class TopTracksListAdapter extends BaseAdapter {
         if(view == null){
             if(mTracks.tracks.size() == 1) {
                 oneItemHolder = new ViewHolder();
-                view = LayoutInflater.from(mContext).inflate(R.layout.list_individual_artist, null);
+                view = LayoutInflater.from(mContext).inflate(R.layout.list_individual_track, null);
                 oneItemHolder.trackImage = (ImageView) view.findViewById(R.id.track_image);
                 oneItemHolder.trackName = (TextView) view.findViewById(R.id.track_name);
                 oneItemHolder.albumName = (TextView) view.findViewById(R.id.album_name);
