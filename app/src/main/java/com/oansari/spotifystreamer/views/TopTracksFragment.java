@@ -1,6 +1,7 @@
 package com.oansari.spotifystreamer.views;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -17,6 +19,7 @@ import com.oansari.spotifystreamer.Spotify;
 import com.oansari.spotifystreamer.adapters.AtristListAdapter;
 import com.oansari.spotifystreamer.adapters.TopTracksListAdapter;
 
+import Helpers.DialogHelper;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import kaaes.spotify.webapi.android.models.ArtistsPager;
@@ -41,6 +44,7 @@ public class TopTracksFragment extends Fragment {
     TopTracksListAdapter adapter;
     Tracks mTracks;
 
+
     @InjectView(R.id.topTracksListView)
     ListView mTopTracksListView;
 
@@ -55,6 +59,7 @@ public class TopTracksFragment extends Fragment {
     private String mArtistName;
     private OnTopTracksFragmentInteractionListener mListener;
 
+    public Fragment mContext;
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
@@ -72,7 +77,7 @@ public class TopTracksFragment extends Fragment {
     }
 
     public TopTracksFragment() {
-        // Required empty public constructor
+
     }
 
     @Override
@@ -82,7 +87,9 @@ public class TopTracksFragment extends Fragment {
             mArtistId = getArguments().getString(ARG_ARTIST_ID);
             mArtistName = getArguments().getString(ARG_ARTIST_NAME);
         }
-        setRetainInstance(true);
+
+        mContext = this;
+
 
     }
 
@@ -94,7 +101,7 @@ public class TopTracksFragment extends Fragment {
         ButterKnife.inject(this, view);
         getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
         getActivity().getActionBar().setSubtitle(mArtistName);
-        mProgressBar.setVisibility(View.VISIBLE);
+
         new FetchSpotifyData().execute();
         return view;
     }
@@ -106,7 +113,7 @@ public class TopTracksFragment extends Fragment {
         super.onStop();
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
+
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
             mListener.OnTopTracksFragmentInteractionListener(uri);
@@ -179,7 +186,7 @@ public class TopTracksFragment extends Fragment {
 
                 @Override
                 public void failure(RetrofitError error) {
-
+                    DialogHelper.alertUserAboutError(mContext);
                 }
             });
             return null;

@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -27,6 +28,7 @@ import com.oansari.spotifystreamer.adapters.AtristListAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
+import Helpers.DialogHelper;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import kaaes.spotify.webapi.android.SpotifyApi;
@@ -65,8 +67,13 @@ public class ArtistListFragment extends Fragment {
 
     boolean stopTextWatcher = false;
 
-    public ArtistListFragment(){}
+    public ArtistListFragment(){ }
     private OnArtistListFragmentInteractionListener mListener;
+
+    public Fragment mContext;
+
+
+
 
     public static ArtistListFragment newInstance() {
         ArtistListFragment fragment = new ArtistListFragment();
@@ -79,6 +86,7 @@ public class ArtistListFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+        mContext = this;
     }
 
     @Override
@@ -95,9 +103,12 @@ public class ArtistListFragment extends Fragment {
         mlistView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                InputMethodManager inputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                inputMethodManager.hideSoftInputFromWindow(getView().getWindowToken(), 0);
                 stopTextWatcher = true;
                 Artist artist = (Artist) adapterView.getItemAtPosition(i);
                 mListener.OnArtistListFragmentInteractionListener(artist);
+
             }
         });
 
@@ -106,7 +117,6 @@ public class ArtistListFragment extends Fragment {
 
         return view;
     }
-
 
 
     private void watchSearchEditText(final Bundle savedInstanceState) {
@@ -224,7 +234,7 @@ public class ArtistListFragment extends Fragment {
 
                 @Override
                 public void failure(RetrofitError error) {
-                    //TODO Handle Failure
+                    DialogHelper.alertUserAboutError(mContext);
                 }
             });
             return null;
