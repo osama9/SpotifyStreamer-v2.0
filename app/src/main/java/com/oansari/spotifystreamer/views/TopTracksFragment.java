@@ -1,7 +1,6 @@
 package com.oansari.spotifystreamer.views;
 
 import android.app.Activity;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -9,20 +8,17 @@ import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.oansari.spotifystreamer.R;
 import com.oansari.spotifystreamer.Spotify;
-import com.oansari.spotifystreamer.adapters.AtristListAdapter;
 import com.oansari.spotifystreamer.adapters.TopTracksListAdapter;
 
-import Helpers.DialogHelper;
+import com.oansari.spotifystreamer.Helpers.DialogHelper;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import kaaes.spotify.webapi.android.models.ArtistsPager;
 import kaaes.spotify.webapi.android.models.Tracks;
 import retrofit.Callback;
 import retrofit.RetrofitError;
@@ -44,6 +40,7 @@ public class TopTracksFragment extends Fragment {
     TopTracksListAdapter adapter;
     Tracks mTracks;
 
+    Bundle savedState;
 
     @InjectView(R.id.topTracksListView)
     ListView mTopTracksListView;
@@ -89,7 +86,7 @@ public class TopTracksFragment extends Fragment {
         }
 
         mContext = this;
-
+        setRetainInstance(true);
 
     }
 
@@ -102,8 +99,30 @@ public class TopTracksFragment extends Fragment {
         getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
         getActivity().getActionBar().setSubtitle(mArtistName);
 
-        new FetchSpotifyData().execute();
+        if (savedState == null)
+            new FetchSpotifyData().execute();
+        else {
+            mProgressBar.setVisibility(View.INVISIBLE);
+            mTopTracksListView.setSelection(saveState().getInt("POSITION"));
+            updateList();
+        }
         return view;
+    }
+
+    private void saveStateToArguments() {
+        if (getView() != null)
+            savedState = saveState();
+        if (savedState != null) {
+            Bundle b = getArguments();
+            b.putBundle("savedState", savedState);
+        }
+    }
+
+    private Bundle saveState() {
+        Bundle state = new Bundle();
+        // For Example
+        state.putInt("POSITION", mTopTracksListView.getFirstVisiblePosition());
+        return state;
     }
 
     @Override
@@ -113,6 +132,11 @@ public class TopTracksFragment extends Fragment {
         super.onStop();
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        saveStateToArguments();
+    }
 
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
@@ -136,6 +160,8 @@ public class TopTracksFragment extends Fragment {
         super.onDetach();
         mListener = null;
     }
+
+
 
     /**
      * This interface must be implemented by activities that contain this

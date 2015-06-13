@@ -1,8 +1,6 @@
-package Helpers;
+package com.oansari.spotifystreamer.Helpers;
 
 import android.app.Fragment;
-import android.app.FragmentManager;
-import android.content.Context;
 
 import dialogs.ErrorDialogFragment;
 

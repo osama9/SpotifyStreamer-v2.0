@@ -69,7 +69,7 @@ public class MainActivity extends Activity implements ArtistListFragment.OnArtis
         TopTracksFragment topTracksFragment = TopTracksFragment.newInstance(artist.id, artist.name);
         getFragmentManager().beginTransaction()
                 .hide(artistListFragment)
-                .add(R.id.fragment, topTracksFragment)
+                .add(R.id.fragment, topTracksFragment, "TopTracksFragment")
                 .addToBackStack(null)
                 .commit();
     }
