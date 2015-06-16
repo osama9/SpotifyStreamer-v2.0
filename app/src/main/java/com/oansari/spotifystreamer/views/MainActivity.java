@@ -13,6 +13,7 @@ import kaaes.spotify.webapi.android.models.Artist;
 
 public class MainActivity extends Activity implements ArtistListFragment.OnArtistListFragmentInteractionListener, TopTracksFragment.OnTopTracksFragmentInteractionListener {
 
+    private boolean mTwoPane;
     ArtistListFragment artistListFragment;
     String ARTISTS_LIST_TAG = "ArtistsListFragment";
     @Override
@@ -22,14 +23,31 @@ public class MainActivity extends Activity implements ArtistListFragment.OnArtis
         artistListFragment = ArtistListFragment.newInstance();
         setContentView(R.layout.activity_main);
         if(savedInstanceState == null) {
+
+
             getFragmentManager().beginTransaction()
                     .add(R.id.fragment, artistListFragment, ARTISTS_LIST_TAG)
                     .addToBackStack(ARTISTS_LIST_TAG)
-                    .commit(); 
+                    .commit();
         }
         else{
             FragmentManager fm = getFragmentManager();
             artistListFragment = (ArtistListFragment) fm.findFragmentByTag(ARTISTS_LIST_TAG);
+        }
+
+        if (findViewById(R.id.item_detail_container) != null) {
+            // The detail container view will be present only in the
+            // large-screen layouts (res/values-large and
+            // res/values-sw600dp). If this view is present, then the
+            // activity should be in two-pane mode.
+            mTwoPane = true;
+
+            // In two-pane mode, list items should be given the
+            // 'activated' state when touched.
+
+//            ((ArtistListFragment)  getFragmentManager()
+//                    .findFragmentById(R.id.fragment))
+//                    .setActivateOnItemClick(true);
         }
 
     }
@@ -67,11 +85,17 @@ public class MainActivity extends Activity implements ArtistListFragment.OnArtis
     @Override
     public void OnArtistListFragmentInteractionListener(Artist artist) {
         TopTracksFragment topTracksFragment = TopTracksFragment.newInstance(artist.id, artist.name);
-        getFragmentManager().beginTransaction()
-                .hide(artistListFragment)
-                .add(R.id.fragment, topTracksFragment, "TopTracksFragment")
-                .addToBackStack(null)
-                .commit();
+        if(mTwoPane){
+            getFragmentManager().beginTransaction()
+                    .replace(R.id.item_detail_container, topTracksFragment, "TopTracksFragment")
+                    .commit();
+        }else {
+            getFragmentManager().beginTransaction()
+                    .hide(artistListFragment)
+                    .add(R.id.fragment, topTracksFragment, "TopTracksFragment")
+                    .addToBackStack(null)
+                    .commit();
+        }
     }
 
     @Override
