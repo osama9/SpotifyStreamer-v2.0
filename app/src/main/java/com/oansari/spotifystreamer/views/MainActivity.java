@@ -25,7 +25,7 @@ public class MainActivity extends Activity implements ArtistListFragment.OnArtis
             getFragmentManager().beginTransaction()
                     .add(R.id.fragment, artistListFragment, ARTISTS_LIST_TAG)
                     .addToBackStack(ARTISTS_LIST_TAG)
-                    .commit();
+                    .commit(); 
         }
         else{
             FragmentManager fm = getFragmentManager();
