@@ -7,8 +7,10 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 
+import com.oansari.spotifystreamer.Helpers.DialogHelper;
 import com.oansari.spotifystreamer.R;
 
+import dialogs.PlayerDialogFragment;
 import kaaes.spotify.webapi.android.models.Artist;
 
 public class MainActivity extends Activity implements ArtistListFragment.OnArtistListFragmentInteractionListener, TopTracksFragment.OnTopTracksFragmentInteractionListener {
@@ -99,8 +101,18 @@ public class MainActivity extends Activity implements ArtistListFragment.OnArtis
     }
 
     @Override
-    public void OnTopTracksFragmentInteractionListener(Uri uri) {
+    public void OnTopTracksFragmentInteractionListener(Fragment topTracksFragment) {
+        if(mTwoPane)
+            DialogHelper.launchPlayerDialog(topTracksFragment, mTwoPane);
+        else {
+            PlayerDialogFragment playerDialogFragment = PlayerDialogFragment.newInstance(mTwoPane);
+            getFragmentManager().beginTransaction()
+                    .hide(topTracksFragment)
+                    .add(R.id.fragment, playerDialogFragment, "TopTracksFragment")
+                    .addToBackStack(null)
+                    .commit();
 
+        }
     }
 
 

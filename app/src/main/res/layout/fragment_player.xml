@@ -57,7 +57,7 @@
 
         <ProgressBar
             style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="361dp"
+            android:layout_width="340dp"
             android:layout_height="wrap_content"
             android:id="@+id/progressBar2"
             android:layout_gravity="center_horizontal"/>

@@ -8,6 +8,7 @@ import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -19,6 +20,7 @@ import com.oansari.spotifystreamer.adapters.TopTracksListAdapter;
 import com.oansari.spotifystreamer.Helpers.DialogHelper;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import dialogs.PlayerDialogFragment;
 import kaaes.spotify.webapi.android.models.Tracks;
 import retrofit.Callback;
 import retrofit.RetrofitError;
@@ -73,6 +75,11 @@ public class TopTracksFragment extends Fragment {
         return fragment;
     }
 
+    public static TopTracksFragment newInstance() {
+        TopTracksFragment fragment = new TopTracksFragment();
+        return fragment;
+    }
+
     public TopTracksFragment() {
 
     }
@@ -106,6 +113,14 @@ public class TopTracksFragment extends Fragment {
             mTopTracksListView.setSelection(saveState().getInt("POSITION"));
             updateList();
         }
+
+        mTopTracksListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                mListener.OnTopTracksFragmentInteractionListener(mContext);
+
+            }
+        });
         return view;
     }
 
@@ -138,9 +153,9 @@ public class TopTracksFragment extends Fragment {
         saveStateToArguments();
     }
 
-    public void onButtonPressed(Uri uri) {
+    public void onButtonPressed() {
         if (mListener != null) {
-            mListener.OnTopTracksFragmentInteractionListener(uri);
+            mListener.OnTopTracksFragmentInteractionListener(mContext);
         }
     }
 
@@ -175,7 +190,7 @@ public class TopTracksFragment extends Fragment {
      */
     public interface OnTopTracksFragmentInteractionListener {
         // TODO: Update argument type and name
-         void OnTopTracksFragmentInteractionListener(Uri uri);
+         void OnTopTracksFragmentInteractionListener(Fragment fragment);
     }
 
     private void updateList() {
