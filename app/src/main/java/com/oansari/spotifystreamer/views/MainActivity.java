@@ -12,6 +12,7 @@ import com.oansari.spotifystreamer.R;
 
 import dialogs.PlayerDialogFragment;
 import kaaes.spotify.webapi.android.models.Artist;
+import kaaes.spotify.webapi.android.models.Track;
 
 public class MainActivity extends Activity implements ArtistListFragment.OnArtistListFragmentInteractionListener, TopTracksFragment.OnTopTracksFragmentInteractionListener {
 
@@ -101,11 +102,11 @@ public class MainActivity extends Activity implements ArtistListFragment.OnArtis
     }
 
     @Override
-    public void OnTopTracksFragmentInteractionListener(Fragment topTracksFragment) {
+    public void OnTopTracksFragmentInteractionListener(Fragment topTracksFragment, Track track) {
         if(mTwoPane)
-            DialogHelper.launchPlayerDialog(topTracksFragment, mTwoPane);
+            DialogHelper.launchPlayerDialog(topTracksFragment, mTwoPane, track);
         else {
-            PlayerDialogFragment playerDialogFragment = PlayerDialogFragment.newInstance(mTwoPane);
+            PlayerDialogFragment playerDialogFragment = PlayerDialogFragment.newInstance(mTwoPane, track);
             getFragmentManager().beginTransaction()
                     .hide(topTracksFragment)
                     .add(R.id.fragment, playerDialogFragment, "TopTracksFragment")

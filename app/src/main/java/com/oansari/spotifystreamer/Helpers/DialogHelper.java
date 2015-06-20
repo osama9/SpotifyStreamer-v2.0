@@ -4,6 +4,7 @@ import android.app.Fragment;
 
 import dialogs.ErrorDialogFragment;
 import dialogs.PlayerDialogFragment;
+import kaaes.spotify.webapi.android.models.Track;
 
 /**
  * Created by Osama on 6/13/2015.
@@ -15,8 +16,8 @@ public class DialogHelper {
         dialog.show(fragment.getFragmentManager(),"error_dialog" );
     }
 
-    public static void launchPlayerDialog(Fragment fragment, boolean twoPane){
-        PlayerDialogFragment dialog = PlayerDialogFragment.newInstance(twoPane);
+    public static void launchPlayerDialog(Fragment fragment, boolean twoPane, Track track){
+        PlayerDialogFragment dialog = PlayerDialogFragment.newInstance(twoPane, track);
         dialog.show(fragment.getFragmentManager(),"player_dialog" );
     }
 
