@@ -9,8 +9,7 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="383dp"
-        android:layout_gravity="center_horizontal|top"
-        android:weightSum="1">
+        android:layout_gravity="center_horizontal|top">
 
         <TextView
             android:layout_width="wrap_content"
@@ -49,42 +48,43 @@
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal|top"
         android:layout_below="@id/informationSection"
         android:weightSum="1"
         android:id="@+id/linearLayout">
 
-        <ProgressBar
+        <SeekBar
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="340dp"
             android:layout_height="wrap_content"
-            android:id="@+id/progressBar2"
+            android:id="@+id/seekBar"
             android:layout_gravity="center_horizontal"/>
 
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_weight="0.26">
+            android:layout_height="30dp"
+            >
 
             <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="20dp"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:text="00:00"
-                android:id="@+id/leftTimeTextView"
+                android:id="@+id/elapsedTimeTextView"
                 android:layout_weight="1"
+                android:layout_gravity="center_vertical"
                 android:layout_marginLeft="5dp"/>
 
             <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="20dp"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:text="50:45"
+                android:layout_gravity="center_vertical"
                 android:layout_weight="1"
-                android:id="@+id/elapsedTimeTextView"
+                android:id="@+id/leftTimeTextView"
                 android:gravity="right"
                 android:layout_marginRight="5dp"/>
         </LinearLayout>
@@ -93,10 +93,10 @@
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_below="@+id/linearLayout"
         android:padding="10dp"
-        android:layout_centerHorizontal="true">
+        android:layout_gravity="center_horizontal|bottom">
 
         <ImageButton
             android:layout_width="wrap_content"

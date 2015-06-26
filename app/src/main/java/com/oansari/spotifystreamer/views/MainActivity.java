@@ -109,7 +109,7 @@ public class MainActivity extends Activity implements ArtistListFragment.OnArtis
             PlayerDialogFragment playerDialogFragment = PlayerDialogFragment.newInstance(mTwoPane, track);
             getFragmentManager().beginTransaction()
                     .hide(topTracksFragment)
-                    .add(R.id.fragment, playerDialogFragment, "TopTracksFragment")
+                    .add(R.id.fragment, playerDialogFragment, "PlayerDialogFragment")
                     .addToBackStack(null)
                     .commit();
 
