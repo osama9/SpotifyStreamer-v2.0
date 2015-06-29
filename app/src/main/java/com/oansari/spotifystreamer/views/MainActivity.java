@@ -102,11 +102,11 @@ public class MainActivity extends Activity implements ArtistListFragment.OnArtis
     }
 
     @Override
-    public void OnTopTracksFragmentInteractionListener(Fragment topTracksFragment, Track track) {
+    public void OnTopTracksFragmentInteractionListener(Fragment topTracksFragment, Track track, int trackPosition) {
         if(mTwoPane)
-            DialogHelper.launchPlayerDialog(topTracksFragment, mTwoPane, track);
+            DialogHelper.launchPlayerDialog(topTracksFragment, mTwoPane, track, trackPosition);
         else {
-            PlayerDialogFragment playerDialogFragment = PlayerDialogFragment.newInstance(mTwoPane, track);
+            PlayerDialogFragment playerDialogFragment = PlayerDialogFragment.newInstance(mTwoPane, track, trackPosition);
             getFragmentManager().beginTransaction()
                     .hide(topTracksFragment)
                     .add(R.id.fragment, playerDialogFragment, "PlayerDialogFragment")

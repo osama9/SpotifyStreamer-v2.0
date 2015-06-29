@@ -41,7 +41,7 @@ public class TopTracksFragment extends Fragment {
     private static final String ARG_ARTIST_ID = "artistID";
     private static final String ARG_ARTIST_NAME = "artistName";
     TopTracksListAdapter adapter;
-    Tracks mTracks;
+    public static Tracks mTracks;
 
     Bundle savedState;
 
@@ -119,9 +119,10 @@ public class TopTracksFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Track track = (Track) adapterView.getItemAtPosition(i);
-                mListener.OnTopTracksFragmentInteractionListener(mContext, track);
+                mListener.OnTopTracksFragmentInteractionListener(mContext, track, i);
             }
         });
+
         return view;
     }
 
@@ -186,7 +187,7 @@ public class TopTracksFragment extends Fragment {
      */
     public interface OnTopTracksFragmentInteractionListener {
         // TODO: Update argument type and name
-         void OnTopTracksFragmentInteractionListener(Fragment fragment, Track track);
+         void OnTopTracksFragmentInteractionListener(Fragment fragment, Track track, int trackPosition);
     }
 
     private void updateList() {

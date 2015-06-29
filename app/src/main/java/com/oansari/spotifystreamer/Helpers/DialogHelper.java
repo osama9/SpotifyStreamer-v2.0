@@ -16,8 +16,8 @@ public class DialogHelper {
         dialog.show(fragment.getFragmentManager(),"error_dialog" );
     }
 
-    public static void launchPlayerDialog(Fragment fragment, boolean twoPane, Track track){
-        PlayerDialogFragment dialog = PlayerDialogFragment.newInstance(twoPane, track);
+    public static void launchPlayerDialog(Fragment fragment, boolean twoPane, Track track, int trackPosition){
+        PlayerDialogFragment dialog = PlayerDialogFragment.newInstance(twoPane, track, trackPosition);
         dialog.show(fragment.getFragmentManager(),"player_dialog" );
     }
 

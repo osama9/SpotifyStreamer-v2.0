@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
@@ -26,6 +27,7 @@ import android.widget.TextView;
 import com.oansari.spotifystreamer.Helpers.DialogHelper;
 import com.oansari.spotifystreamer.R;
 import com.oansari.spotifystreamer.Spotify;
+import com.oansari.spotifystreamer.views.TopTracksFragment;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
@@ -61,6 +63,10 @@ public class PlayerDialogFragment extends DialogFragment {
     TextView mLeftTimeTextView;
     @InjectView(R.id.playButton)
     ImageButton mPlayButton;
+    @InjectView(R.id.nextButton)
+    ImageButton mNextButton;
+    @InjectView(R.id.previusButton)
+    ImageButton mPreviusButton;
     @InjectView(R.id.seekBar)
     SeekBar mSeekBar;
 
@@ -82,16 +88,16 @@ public class PlayerDialogFragment extends DialogFragment {
     public static boolean mTwoPane;
 
     private int lastPosition = 0;
+    private static int mTrackPosition;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Context context = getActivity();
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-//        AlertDialog dialog = builder.create();
-//        dialog.setContentView(R.layout.fragment_player);
-       View  view = getActivity().getLayoutInflater().inflate(R.layout.fragment_player, null);
+
+        View view = getActivity().getLayoutInflater().inflate(R.layout.fragment_player, null);
         ButterKnife.inject(this, view);
-        //getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
         prepareMediaPlayer();
         addEvents();
         feedInfo();
@@ -141,7 +147,7 @@ public class PlayerDialogFragment extends DialogFragment {
             public void onClick(View view) {
 
                 if (mMediaPlayer.isPlaying()) {
-                   pause();
+                    pause();
                     mPlayButton.setImageResource(android.R.drawable.ic_media_play);
                 } else {
                     play();
@@ -150,11 +156,74 @@ public class PlayerDialogFragment extends DialogFragment {
             }
 
         });
+
+
+        mNextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (mTrackPosition % (TopTracksFragment.mTracks.tracks.size() -1) == 0 && mTrackPosition > 0){
+                    mTrackPosition = 0;
+                    mTrack = TopTracksFragment.mTracks.tracks.get(mTrackPosition);
+                }
+                else {
+                    mTrackPosition += 1;
+                    mTrack = TopTracksFragment.mTracks.tracks.get(mTrackPosition);
+                }
+
+                dismiss();
+                mMediaPlayer.stop();
+                mMediaPlayer.release();
+                if(mTwoPane)
+                 DialogHelper.launchPlayerDialog(getActivity().getFragmentManager().findFragmentByTag("TopTracksFragment"), mTwoPane, mTrack, mTrackPosition);
+                else {
+                    PlayerDialogFragment playerDialogFragment = PlayerDialogFragment.newInstance(mTwoPane, mTrack, mTrackPosition);
+                    getFragmentManager().beginTransaction()
+                            .hide(getFragmentManager().findFragmentByTag("TopTracksFragment"))
+                            .add(R.id.fragment, playerDialogFragment, "PlayerDialogFragment")
+                            .addToBackStack(null)
+                            .commit();
+                }
+            }
+        });
+
+        mPreviusButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (mTrackPosition == 0 ){
+                    mTrackPosition = TopTracksFragment.mTracks.tracks.size() -1;
+                    mTrack = TopTracksFragment.mTracks.tracks.get(mTrackPosition);
+                }
+                else {
+                    mTrackPosition -= 1;
+                    mTrack = TopTracksFragment.mTracks.tracks.get(mTrackPosition);
+                }
+
+
+                dismiss();
+                mMediaPlayer.stop();
+                mMediaPlayer.release();
+                if(mTwoPane)
+                    DialogHelper.launchPlayerDialog(getActivity().getFragmentManager().findFragmentByTag("TopTracksFragment"), mTwoPane, mTrack, mTrackPosition);
+                else {
+                    PlayerDialogFragment playerDialogFragment = PlayerDialogFragment.newInstance(mTwoPane, mTrack, mTrackPosition);
+                    getFragmentManager().beginTransaction()
+                            .hide(getFragmentManager().findFragmentByTag("TopTracksFragment"))
+                            .add(R.id.fragment, playerDialogFragment, "PlayerDialogFragment")
+                            .addToBackStack(null)
+                            .commit();
+                }
+            }
+        });
+
+
     }
 
-    public static PlayerDialogFragment newInstance (boolean twoPane, Track track){
+    public static PlayerDialogFragment newInstance (boolean twoPane, Track track, int trackPosition){
         mTwoPane = twoPane;
         mTrack = track;
+        mTrackPosition = trackPosition;
         previewStream = Uri.parse(mTrack.preview_url);
         mMediaPlayer = new MediaPlayer();
 
@@ -231,6 +300,13 @@ public class PlayerDialogFragment extends DialogFragment {
 
 
 
+    }
+
+    @Override
+    public void onDestroyView() {
+        if (getDialog() != null && getRetainInstance())
+            getDialog().setDismissMessage(null);
+        super.onDestroyView();
     }
 
     @Override
