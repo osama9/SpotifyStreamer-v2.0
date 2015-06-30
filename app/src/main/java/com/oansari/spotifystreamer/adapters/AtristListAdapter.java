@@ -21,11 +21,9 @@ import kaaes.spotify.webapi.android.models.Artists;
  */
 public class AtristListAdapter extends BaseAdapter {
 
-    private boolean changeLayout = false;
+
     private Context mContext;
     private List<Artist> mArtists;
-    private List<Artist> filteredArtistList; //This list to apply filter on it
-    private List<Artist> mArtistsHolder; //Keep the orignal list
     //private ListFilter mListFilter;
     public AtristListAdapter(Context context, List<Artist> artists){
         mContext = context;
@@ -73,7 +71,6 @@ public class AtristListAdapter extends BaseAdapter {
         }else {
             holder = (ViewHolder) view.getTag();
         }
-
         Artist artist = mArtists.get(i);
         if (artist.images.size() > 0)
             Picasso.with(mContext).load(artist.images.get(0).url).into(holder.artistImage);

@@ -50,7 +50,6 @@ public class TopTracksListAdapter extends BaseAdapter {
     public View getView(int i, View view, ViewGroup viewGroup) {
         ViewHolder holder;
         ViewHolder oneItemHolder;
-
         if(view == null){
             if(mTracks.tracks.size() == 1) {
                 oneItemHolder = new ViewHolder();

@@ -8,11 +8,7 @@
               android:showDividers="middle"
               tools:context=".ItemListActivity">
 
-    <!--
-    This layout is a two-pane layout for the Items
-    master/detail flow.
-    
-    -->
+
 
     <FrameLayout
         android:id="@+id/fragment"

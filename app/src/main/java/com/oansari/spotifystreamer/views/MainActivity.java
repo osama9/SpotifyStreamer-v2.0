@@ -39,18 +39,9 @@ public class MainActivity extends Activity implements ArtistListFragment.OnArtis
         }
 
         if (findViewById(R.id.item_detail_container) != null) {
-            // The detail container view will be present only in the
-            // large-screen layouts (res/values-large and
-            // res/values-sw600dp). If this view is present, then the
-            // activity should be in two-pane mode.
+
             mTwoPane = true;
 
-            // In two-pane mode, list items should be given the
-            // 'activated' state when touched.
-
-//            ((ArtistListFragment)  getFragmentManager()
-//                    .findFragmentById(R.id.fragment))
-//                    .setActivateOnItemClick(true);
         }
 
     }

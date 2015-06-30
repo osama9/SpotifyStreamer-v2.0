@@ -108,7 +108,8 @@ public class TopTracksFragment extends Fragment {
         getActivity().getActionBar().setSubtitle(mArtistName);
 
         if (savedState == null)
-            new FetchSpotifyData().execute();
+            //new FetchSpotifyData().execute();
+        FetchSpotifyData();
         else {
             mProgressBar.setVisibility(View.INVISIBLE);
             mTopTracksListView.setSelection(saveState().getInt("POSITION"));
@@ -122,6 +123,8 @@ public class TopTracksFragment extends Fragment {
                 mListener.OnTopTracksFragmentInteractionListener(mContext, track, i);
             }
         });
+
+
 
         return view;
     }
@@ -196,39 +199,68 @@ public class TopTracksFragment extends Fragment {
         adapter.notifyDataSetChanged();
     }
 
-
-    private class FetchSpotifyData extends AsyncTask {
-
-        @Override
-        protected Object doInBackground(Object... objects) {
-
-            Spotify.instance().mSpotifyService.getArtistTopTrack(mArtistId, new Callback<Tracks>() {
-                @Override
-                public void success(final Tracks tracks, Response response) {
-                    mTracks = tracks;
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mProgressBar.setVisibility(View.INVISIBLE);
-                            if(tracks.tracks.size() == 0) {
-                                mNotFoundTextView.setVisibility(View.VISIBLE);
-                                mTopTracksListView.setVisibility(View.INVISIBLE);
-                            }else{
-                                mNotFoundTextView.setVisibility(View.INVISIBLE);
-                                mTopTracksListView.setVisibility(View.VISIBLE);
-                            }
-                            updateList();
+    private void FetchSpotifyData(){
+        Spotify.instance().mSpotifyService.getArtistTopTrack(mArtistId, new Callback<Tracks>() {
+            @Override
+            public void success(final Tracks tracks, Response response) {
+                mTracks = tracks;
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mProgressBar.setVisibility(View.INVISIBLE);
+                        if(tracks.tracks.size() == 0) {
+                            mNotFoundTextView.setVisibility(View.VISIBLE);
+                            mTopTracksListView.setVisibility(View.INVISIBLE);
+                        }else{
+                            mNotFoundTextView.setVisibility(View.INVISIBLE);
+                            mTopTracksListView.setVisibility(View.VISIBLE);
                         }
-                    });
-                }
+                        updateList();
+                    }
+                });
+            }
 
-                @Override
-                public void failure(RetrofitError error) {
-                    DialogHelper.alertUserAboutError(mContext);
-                }
-            });
-            return null;
-        }
+            @Override
+            public void failure(RetrofitError error) {
+                DialogHelper.alertUserAboutError(mContext);
+            }
+        });
     }
+
+
+    // FOR REFERENCE
+//    private class FetchSpotifyData extends AsyncTask {
+//
+//        @Override
+//        protected Object doInBackground(Object... objects) {
+//
+//            Spotify.instance().mSpotifyService.getArtistTopTrack(mArtistId, new Callback<Tracks>() {
+//                @Override
+//                public void success(final Tracks tracks, Response response) {
+//                    mTracks = tracks;
+//                    getActivity().runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            mProgressBar.setVisibility(View.INVISIBLE);
+//                            if(tracks.tracks.size() == 0) {
+//                                mNotFoundTextView.setVisibility(View.VISIBLE);
+//                                mTopTracksListView.setVisibility(View.INVISIBLE);
+//                            }else{
+//                                mNotFoundTextView.setVisibility(View.INVISIBLE);
+//                                mTopTracksListView.setVisibility(View.VISIBLE);
+//                            }
+//                            updateList();
+//                        }
+//                    });
+//                }
+//
+//                @Override
+//                public void failure(RetrofitError error) {
+//                    DialogHelper.alertUserAboutError(mContext);
+//                }
+//            });
+//            return null;
+//        }
+//    }
 
 }

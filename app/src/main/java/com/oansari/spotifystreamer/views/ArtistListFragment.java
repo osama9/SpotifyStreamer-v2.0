@@ -55,7 +55,7 @@ public class ArtistListFragment extends Fragment {
     SpotifyService mSpotifyService;
 
     @InjectView(R.id.artistsListView)
-    ListView mlistView;
+    ListView mArtistlistView;
     @InjectView(R.id.filterEditText)
     EditText mFilterEditText;
     @InjectView(R.id.progressBar)
@@ -85,6 +85,7 @@ public class ArtistListFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         mContext = this;
+
     }
 
     @Override
@@ -93,12 +94,12 @@ public class ArtistListFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_artist_list, container, false);
         ButterKnife.inject(this, view);
-        mlistView.setVisibility(View.INVISIBLE);
+        mArtistlistView.setVisibility(View.INVISIBLE);
         mProgressBar.setVisibility(View.INVISIBLE);
 
         watchSearchEditText(savedInstanceState);
 
-        mlistView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mArtistlistView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 InputMethodManager inputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -135,7 +136,7 @@ public class ArtistListFragment extends Fragment {
                     newKeyword = charSequence.toString();
                 if (charSequence.length() > 0 && !newKeyword.equals(existingKeyword)) {
                     mProgressBar.setVisibility(View.VISIBLE);
-                    mlistView.setVisibility(View.INVISIBLE);
+                    mArtistlistView.setVisibility(View.INVISIBLE);
                     stopTextWatcher = false;
 
                 } else {
@@ -145,7 +146,7 @@ public class ArtistListFragment extends Fragment {
                     updateList();
                     mNotFoundTextView.setVisibility(View.INVISIBLE);
                     mProgressBar.setVisibility(View.INVISIBLE);
-                    mlistView.setVisibility(View.VISIBLE);
+                    mArtistlistView.setVisibility(View.VISIBLE);
                     stopTextWatcher = true;
                 }
                 already_queried = false;
@@ -164,7 +165,8 @@ public class ArtistListFragment extends Fragment {
                                 // the min delay (with half second buffer window)
                                 if (mFilterEditText.getText().toString().length() > 0) {
                                     mProgressBar.setVisibility(View.VISIBLE);
-                                    new FetchSpotifyData().execute();
+                                    //new FetchSpotifyData().execute();
+                                    FetchSpotifyData();
 
                                     Log.d("Time Elapsed", "User stopped typing");  // your queries
                                 }
@@ -203,41 +205,70 @@ public class ArtistListFragment extends Fragment {
 
     private void updateList() {
         adapter = new AtristListAdapter(getActivity(), mArtists);
-        mlistView.setAdapter(adapter);
+        mArtistlistView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
     }
 
-    private class FetchSpotifyData extends AsyncTask {
-
-        @Override
-        protected Object doInBackground(Object... objects) {
-            Spotify.instance().mSpotifyService.searchArtists(mFilterEditText.getText().toString(), new Callback<ArtistsPager>() {
-                @Override
-                public void success(ArtistsPager artistsPager, Response response) {
-                    mArtists = artistsPager.artists.items;
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            updateList();
-                            mProgressBar.setVisibility(View.INVISIBLE);
-                            if (mArtists.size() > 0) {
-                                mlistView.setVisibility(View.VISIBLE);
-                                mNotFoundTextView.setVisibility(View.INVISIBLE);
-                            }
-                            else
-                                mNotFoundTextView.setVisibility(View.VISIBLE);
+    private void FetchSpotifyData(){
+        Spotify.instance().mSpotifyService.searchArtists(mFilterEditText.getText().toString(), new Callback<ArtistsPager>() {
+            @Override
+            public void success(ArtistsPager artistsPager, Response response) {
+                mArtists = artistsPager.artists.items;
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateList();
+                        mProgressBar.setVisibility(View.INVISIBLE);
+                        if (mArtists.size() > 0) {
+                            mArtistlistView.setVisibility(View.VISIBLE);
+                            mNotFoundTextView.setVisibility(View.INVISIBLE);
                         }
-                    });
-                }
+                        else
+                            mNotFoundTextView.setVisibility(View.VISIBLE);
+                    }
+                });
+            }
 
-                @Override
-                public void failure(RetrofitError error) {
-                    DialogHelper.alertUserAboutError(mContext);
-                }
-            });
-            return null;
-        }
+            @Override
+            public void failure(RetrofitError error) {
+                DialogHelper.alertUserAboutError(mContext);
+            }
+        });
     }
+
+    //FOR REFERENCE
+
+//    private class FetchSpotifyData extends AsyncTask {
+//
+//        @Override
+//        protected Object doInBackground(Object... objects) {
+//            Spotify.instance().mSpotifyService.searchArtists(mFilterEditText.getText().toString(), new Callback<ArtistsPager>() {
+//                @Override
+//                public void success(ArtistsPager artistsPager, Response response) {
+//                    mArtists = artistsPager.artists.items;
+//                    getActivity().runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            updateList();
+//                            mProgressBar.setVisibility(View.INVISIBLE);
+//                            if (mArtists.size() > 0) {
+//                                mArtistlistView.setVisibility(View.VISIBLE);
+//                                mNotFoundTextView.setVisibility(View.INVISIBLE);
+//                            }
+//                            else
+//                                mNotFoundTextView.setVisibility(View.VISIBLE);
+//                        }
+//                    });
+//                }
+//
+//                @Override
+//                public void failure(RetrofitError error) {
+//                    DialogHelper.alertUserAboutError(mContext);
+//                }
+//            });
+//            return null;
+//        }
+//    }
 
     /**
      * This interface must be implemented by activities that contain this
@@ -262,7 +293,7 @@ public class ArtistListFragment extends Fragment {
     public void setActivateOnItemClick(boolean activateOnItemClick) {
         // When setting CHOICE_MODE_SINGLE, ListView will automatically
         // give items the 'activated' state when touched.
-        mlistView.setChoiceMode(activateOnItemClick
+        mArtistlistView.setChoiceMode(activateOnItemClick
                 ? ListView.CHOICE_MODE_SINGLE
                 : ListView.CHOICE_MODE_NONE);
     }

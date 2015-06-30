@@ -39,10 +39,6 @@ import java.util.zip.Inflater;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import kaaes.spotify.webapi.android.models.Track;
-import kaaes.spotify.webapi.android.models.Tracks;
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
 
 /**
  * Created by Osama on 6/19/2015.
@@ -72,10 +68,7 @@ public class PlayerDialogFragment extends DialogFragment {
 
     private double timeElapsed = 0, finalTime = 0;
 
-    private int forwardTime = 2000, backwardTime = 2000;
-
     private Handler durationHandler = new Handler();
-
 
     private static Uri previewStream;
 
@@ -88,6 +81,7 @@ public class PlayerDialogFragment extends DialogFragment {
     public static boolean mTwoPane;
 
     private int lastPosition = 0;
+
     private static int mTrackPosition;
 
     @Override
@@ -121,7 +115,6 @@ public class PlayerDialogFragment extends DialogFragment {
         durationHandler.removeCallbacks(updateSeekBarTime);
         mMediaPlayer.release();
         super.onStop();
-
     }
 
     private void addEvents() {
@@ -157,7 +150,6 @@ public class PlayerDialogFragment extends DialogFragment {
 
         });
 
-
         mNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -174,16 +166,7 @@ public class PlayerDialogFragment extends DialogFragment {
                 dismiss();
                 mMediaPlayer.stop();
                 mMediaPlayer.release();
-                if(mTwoPane)
-                 DialogHelper.launchPlayerDialog(getActivity().getFragmentManager().findFragmentByTag("TopTracksFragment"), mTwoPane, mTrack, mTrackPosition);
-                else {
-                    PlayerDialogFragment playerDialogFragment = PlayerDialogFragment.newInstance(mTwoPane, mTrack, mTrackPosition);
-                    getFragmentManager().beginTransaction()
-                            .hide(getFragmentManager().findFragmentByTag("TopTracksFragment"))
-                            .add(R.id.fragment, playerDialogFragment, "PlayerDialogFragment")
-                            .addToBackStack(null)
-                            .commit();
-                }
+                updatePlayer();
             }
         });
 
@@ -204,20 +187,48 @@ public class PlayerDialogFragment extends DialogFragment {
                 dismiss();
                 mMediaPlayer.stop();
                 mMediaPlayer.release();
-                if(mTwoPane)
-                    DialogHelper.launchPlayerDialog(getActivity().getFragmentManager().findFragmentByTag("TopTracksFragment"), mTwoPane, mTrack, mTrackPosition);
-                else {
-                    PlayerDialogFragment playerDialogFragment = PlayerDialogFragment.newInstance(mTwoPane, mTrack, mTrackPosition);
-                    getFragmentManager().beginTransaction()
-                            .hide(getFragmentManager().findFragmentByTag("TopTracksFragment"))
-                            .add(R.id.fragment, playerDialogFragment, "PlayerDialogFragment")
-                            .addToBackStack(null)
-                            .commit();
-                }
+                updatePlayer();
             }
         });
 
+        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mediaPlayer) {
+                mMediaPlayer.pause();
+                mPlayButton.setImageResource(android.R.drawable.ic_media_play);
+                mMediaPlayer.seekTo(0);
+                mSeekBar.setProgress(0);
+                durationHandler.removeCallbacks(updateSeekBarTime);
+            }
+        });
 
+        mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean fromUser) {
+                if(fromUser)
+                    mMediaPlayer.seekTo(i);
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+
+
+    }
+
+    private void updatePlayer() {
+        if(mTwoPane)
+            DialogHelper.launchPlayerDialog(getActivity().getFragmentManager().findFragmentByTag("TopTracksFragment"), mTwoPane, mTrack, mTrackPosition);
+        else {
+            PlayerDialogFragment playerDialogFragment = PlayerDialogFragment.newInstance(mTwoPane, mTrack, mTrackPosition);
+            getFragmentManager().beginTransaction()
+                    .hide(getFragmentManager().findFragmentByTag("TopTracksFragment"))
+                    .add(R.id.fragment, playerDialogFragment, "PlayerDialogFragment")
+                    .addToBackStack(null)
+                    .commit();
+        }
     }
 
     public static PlayerDialogFragment newInstance (boolean twoPane, Track track, int trackPosition){
@@ -228,7 +239,6 @@ public class PlayerDialogFragment extends DialogFragment {
         mMediaPlayer = new MediaPlayer();
 
         return new PlayerDialogFragment();
-
     }
 
     public void play(){
@@ -245,7 +255,7 @@ public class PlayerDialogFragment extends DialogFragment {
             timeElapsed = mMediaPlayer.getCurrentPosition();
             //set seekbar progress
             mSeekBar.setProgress((int) timeElapsed);
-            //set time remaing
+            //set time remaining
             double timeRemaining = finalTime - timeElapsed;
             mElapsedTimeTextView.setText(
                     String.format("%d min, %d sec",
@@ -260,30 +270,16 @@ public class PlayerDialogFragment extends DialogFragment {
         }
     };
 
-    // pause
+
     public void pause(){
         mMediaPlayer.pause();
     }
-
-    // go forward at forwardTime seconds
-    public void forward(View view) {
-        //check if we can go forward at forwardTime seconds before song endes
-        if ((timeElapsed + forwardTime) >  0) {
-            timeElapsed = timeElapsed - backwardTime;
-            //seek to the exact second of the track
-            mMediaPlayer.seekTo((int) timeElapsed);
-        }
-    }
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         mContext = getActivity().getApplicationContext();
-
-
-
     }
 
     private void  prepareMediaPlayer(){
@@ -298,14 +294,13 @@ public class PlayerDialogFragment extends DialogFragment {
             e.printStackTrace();
         }
 
-
-
     }
 
     @Override
     public void onDestroyView() {
         if (getDialog() != null && getRetainInstance())
             getDialog().setDismissMessage(null);
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
         super.onDestroyView();
     }
 
@@ -329,13 +324,9 @@ public class PlayerDialogFragment extends DialogFragment {
         prepareMediaPlayer();
         View view = inflater.inflate(R.layout.fragment_player, container, false);
         ButterKnife.inject(this, view);
-        //getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         addEvents();
         feedInfo();
-
-
-
-
         return view;
     }
 

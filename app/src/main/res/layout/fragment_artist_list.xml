@@ -31,8 +31,9 @@
         android:text="@string/artist_not_found_message"/>
     <ListView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:id="@+id/artistsListView"
+        android:choiceMode="singleChoice"
         android:layout_centerHorizontal="true"
         android:layout_below="@+id/filterEditText"/>
 </RelativeLayout>
