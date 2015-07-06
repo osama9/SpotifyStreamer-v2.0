@@ -2,7 +2,6 @@ package com.oansari.spotifystreamer.views;
 
 import android.app.Activity;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.os.Handler;
@@ -26,7 +25,7 @@ import com.oansari.spotifystreamer.adapters.AtristListAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.oansari.spotifystreamer.Helpers.DialogHelper;
+import com.oansari.spotifystreamer.helpers.DialogHelper;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import kaaes.spotify.webapi.android.SpotifyApi;

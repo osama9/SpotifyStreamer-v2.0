@@ -1,8 +1,6 @@
 package com.oansari.spotifystreamer.views;
 
 import android.app.Activity;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
@@ -17,10 +15,9 @@ import com.oansari.spotifystreamer.R;
 import com.oansari.spotifystreamer.Spotify;
 import com.oansari.spotifystreamer.adapters.TopTracksListAdapter;
 
-import com.oansari.spotifystreamer.Helpers.DialogHelper;
+import com.oansari.spotifystreamer.helpers.DialogHelper;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import dialogs.PlayerDialogFragment;
 import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.Tracks;
 import retrofit.Callback;
@@ -120,7 +117,7 @@ public class TopTracksFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Track track = (Track) adapterView.getItemAtPosition(i);
-                mListener.OnTopTracksFragmentInteractionListener(mContext, track, i);
+                mListener.OnTopTracksFragmentInteractionListener(mContext, track, i, mTracks);
             }
         });
 
@@ -190,7 +187,7 @@ public class TopTracksFragment extends Fragment {
      */
     public interface OnTopTracksFragmentInteractionListener {
         // TODO: Update argument type and name
-         void OnTopTracksFragmentInteractionListener(Fragment fragment, Track track, int trackPosition);
+         void OnTopTracksFragmentInteractionListener(Fragment fragment, Track track, int trackPosition, Tracks tracks);
     }
 
     private void updateList() {

@@ -1,49 +1,53 @@
 package dialogs;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.app.Fragment;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
-import android.content.res.Configuration;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.MediaController;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.oansari.spotifystreamer.Helpers.DialogHelper;
+import com.google.gson.Gson;
+import com.oansari.spotifystreamer.Constants;
+import com.oansari.spotifystreamer.helpers.DialogHelper;
 import com.oansari.spotifystreamer.R;
-import com.oansari.spotifystreamer.Spotify;
+import com.oansari.spotifystreamer.models.ParcelableTrack;
+import com.oansari.spotifystreamer.services.MediaPlayerService;
 import com.oansari.spotifystreamer.views.TopTracksFragment;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
-import java.util.zip.Inflater;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import kaaes.spotify.webapi.android.models.Track;
+import kaaes.spotify.webapi.android.models.Tracks;
 
 /**
  * Created by Osama on 6/19/2015.
  */
 public class PlayerDialogFragment extends DialogFragment {
+
+    private static MediaPlayerService mMediaPlayerService;
+    private Intent mMediaPlayerIntent;
+    private boolean mMediaBound = false;
+
 
     @InjectView(R.id.artistNameTextView)
     TextView mArtistNameTextView;
@@ -74,6 +78,8 @@ public class PlayerDialogFragment extends DialogFragment {
 
     private static Track mTrack;
 
+    private static Tracks mTracks;
+
     private static MediaPlayer mMediaPlayer;
 
     private static Context mContext;
@@ -92,7 +98,7 @@ public class PlayerDialogFragment extends DialogFragment {
         View view = getActivity().getLayoutInflater().inflate(R.layout.fragment_player, null);
         ButterKnife.inject(this, view);
 
-        prepareMediaPlayer();
+        //prepareMediaPlayer();
         addEvents();
         feedInfo();
         builder.setView(view);
@@ -106,26 +112,40 @@ public class PlayerDialogFragment extends DialogFragment {
         mTrackNameTextView.setText(mTrack.name);
         mAlbumNameTextView.setText(mTrack.album.name);
         Picasso.with(getActivity()).load(mTrack.album.images.get(0).url).into(mAlbumArtImageView);
-        mMediaPlayer.prepareAsync();
         mPlayButton.setEnabled(false);
     }
 
     @Override
     public void onStop() {
         durationHandler.removeCallbacks(updateSeekBarTime);
-        mMediaPlayer.release();
+        //mMediaPlayer.release();
         super.onStop();
     }
 
     private void addEvents() {
-
-        mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+        if(mMediaPlayerService == null){
+            mMediaPlayerService = new MediaPlayerService();
+            mMediaPlayerService.setMediaPlayer();
+        }
+        mMediaPlayerService.mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mediaPlayer) {
-                mSeekBar.setMax(mMediaPlayer.getDuration());
+                mSeekBar.setMax(mMediaPlayerService.mMediaPlayer.getDuration());
                 mLeftTimeTextView.setText(String.format("%d min, %d sec", TimeUnit.MILLISECONDS.toMinutes((long)  finalTime),
-                        TimeUnit.MILLISECONDS.toSeconds((long) mMediaPlayer.getDuration()) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((long) mMediaPlayer.getDuration()))));
+                        TimeUnit.MILLISECONDS.toSeconds((long) mMediaPlayerService.mMediaPlayer.getDuration()) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((long) mMediaPlayerService.mMediaPlayer.getDuration()))));
                 mPlayButton.setEnabled(true);
+
+                if(mMediaPlayerIntent == null){
+                    mMediaPlayerIntent = new Intent(mContext, MediaPlayerService.class);
+                    mMediaPlayerIntent.setAction(Constants.ACTION.STARTFOREGROUND_ACTION);
+                    mMediaPlayerIntent.putExtra("TRACK_LIST", new Gson().toJson(mTracks));
+                    mMediaPlayerIntent.putExtra("TRACK_POSITION", mTrackPosition);
+                    getActivity().startService(mMediaPlayerIntent);
+                    if(mMediaPlayerService == null){
+                        mMediaPlayerService = new MediaPlayerService(mContext);
+                        //mMediaPlayerService.setTrack(mTrack);
+                    }
+                }
 
                 if (lastPosition > 0){
                     mMediaPlayer.seekTo(lastPosition);
@@ -139,11 +159,14 @@ public class PlayerDialogFragment extends DialogFragment {
             @Override
             public void onClick(View view) {
 
-                if (mMediaPlayer.isPlaying()) {
-                    pause();
+                if (mMediaPlayerService.mMediaPlayer.isPlaying()) {
+                    mMediaPlayerService.pause();
+                    //pause();
                     mPlayButton.setImageResource(android.R.drawable.ic_media_play);
                 } else {
-                    play();
+                    //play();
+
+                    mMediaPlayerService.play();
                     mPlayButton.setImageResource(android.R.drawable.ic_media_pause);
                 }
             }
@@ -164,8 +187,8 @@ public class PlayerDialogFragment extends DialogFragment {
                 }
 
                 dismiss();
-                mMediaPlayer.stop();
-                mMediaPlayer.release();
+                mMediaPlayerService.stop();
+                mMediaPlayerService.release();
                 updatePlayer();
             }
         });
@@ -220,9 +243,9 @@ public class PlayerDialogFragment extends DialogFragment {
 
     private void updatePlayer() {
         if(mTwoPane)
-            DialogHelper.launchPlayerDialog(getActivity().getFragmentManager().findFragmentByTag("TopTracksFragment"), mTwoPane, mTrack, mTrackPosition);
+            DialogHelper.launchPlayerDialog(getActivity().getFragmentManager().findFragmentByTag("TopTracksFragment"), mTwoPane, mTrack, mTrackPosition, mTracks);
         else {
-            PlayerDialogFragment playerDialogFragment = PlayerDialogFragment.newInstance(mTwoPane, mTrack, mTrackPosition);
+            PlayerDialogFragment playerDialogFragment = PlayerDialogFragment.newInstance(mTwoPane, mTrack, mTrackPosition, mTracks);
             getFragmentManager().beginTransaction()
                     .hide(getFragmentManager().findFragmentByTag("TopTracksFragment"))
                     .add(R.id.fragment, playerDialogFragment, "PlayerDialogFragment")
@@ -231,13 +254,13 @@ public class PlayerDialogFragment extends DialogFragment {
         }
     }
 
-    public static PlayerDialogFragment newInstance (boolean twoPane, Track track, int trackPosition){
+    public static PlayerDialogFragment newInstance (boolean twoPane, Track track, int trackPosition, Tracks tracks){
         mTwoPane = twoPane;
         mTrack = track;
+        mTracks = tracks;
         mTrackPosition = trackPosition;
         previewStream = Uri.parse(mTrack.preview_url);
         mMediaPlayer = new MediaPlayer();
-
         return new PlayerDialogFragment();
     }
 
@@ -282,19 +305,34 @@ public class PlayerDialogFragment extends DialogFragment {
         mContext = getActivity().getApplicationContext();
     }
 
-    private void  prepareMediaPlayer(){
-        try {
-            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        }catch (Exception e){
-            mMediaPlayer = new MediaPlayer();
-        }
-        try {
-            mMediaPlayer.setDataSource(mContext, previewStream);
-        } catch (IOException e) {
-            e.printStackTrace();
+    private ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            //mMediaPlayerService = new MediaPlayerService();
+            //mMediaPlayerService.setTrack(mTrack);
+            mMediaBound = true;
         }
 
-    }
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            mMediaBound = false;
+        }
+    };
+
+//    private void  prepareMediaPlayer(){
+//        try {
+//            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+//        }catch (Exception e){
+//            mMediaPlayer = new MediaPlayer();
+//        }
+//        try {
+//            mMediaPlayer.setDataSource(mContext, previewStream);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//
+//    }
 
     @Override
     public void onDestroyView() {
@@ -321,7 +359,7 @@ public class PlayerDialogFragment extends DialogFragment {
         if(mTwoPane){
             return super.onCreateView(inflater, container, savedInstanceState);
         }
-        prepareMediaPlayer();
+        //prepareMediaPlayer();
         View view = inflater.inflate(R.layout.fragment_player, container, false);
         ButterKnife.inject(this, view);
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -339,6 +377,7 @@ public class PlayerDialogFragment extends DialogFragment {
     @Override
     public void onStart() {
         super.onStart();
+
 
         // safety check
         if (getDialog() == null) {

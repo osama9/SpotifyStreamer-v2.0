@@ -1,10 +1,11 @@
-package com.oansari.spotifystreamer.Helpers;
+package com.oansari.spotifystreamer.helpers;
 
 import android.app.Fragment;
 
 import dialogs.ErrorDialogFragment;
 import dialogs.PlayerDialogFragment;
 import kaaes.spotify.webapi.android.models.Track;
+import kaaes.spotify.webapi.android.models.Tracks;
 
 /**
  * Created by Osama on 6/13/2015.
@@ -16,8 +17,8 @@ public class DialogHelper {
         dialog.show(fragment.getFragmentManager(),"error_dialog" );
     }
 
-    public static void launchPlayerDialog(Fragment fragment, boolean twoPane, Track track, int trackPosition){
-        PlayerDialogFragment dialog = PlayerDialogFragment.newInstance(twoPane, track, trackPosition);
+    public static void launchPlayerDialog(Fragment fragment, boolean twoPane, Track track, int trackPosition, Tracks tracks){
+        PlayerDialogFragment dialog = PlayerDialogFragment.newInstance(twoPane, track, trackPosition, tracks);
         dialog.show(fragment.getFragmentManager(),"player_dialog" );
     }
 

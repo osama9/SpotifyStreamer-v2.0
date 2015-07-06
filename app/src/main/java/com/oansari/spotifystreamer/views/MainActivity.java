@@ -2,17 +2,17 @@ package com.oansari.spotifystreamer.views;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 
-import com.oansari.spotifystreamer.Helpers.DialogHelper;
+import com.oansari.spotifystreamer.helpers.DialogHelper;
 import com.oansari.spotifystreamer.R;
 
 import dialogs.PlayerDialogFragment;
 import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.Track;
+import kaaes.spotify.webapi.android.models.Tracks;
 
 public class MainActivity extends Activity implements ArtistListFragment.OnArtistListFragmentInteractionListener, TopTracksFragment.OnTopTracksFragmentInteractionListener {
 
@@ -93,11 +93,11 @@ public class MainActivity extends Activity implements ArtistListFragment.OnArtis
     }
 
     @Override
-    public void OnTopTracksFragmentInteractionListener(Fragment topTracksFragment, Track track, int trackPosition) {
+    public void OnTopTracksFragmentInteractionListener(Fragment topTracksFragment, Track track, int trackPosition, Tracks tracks) {
         if(mTwoPane)
-            DialogHelper.launchPlayerDialog(topTracksFragment, mTwoPane, track, trackPosition);
+            DialogHelper.launchPlayerDialog(topTracksFragment, mTwoPane, track, trackPosition, tracks);
         else {
-            PlayerDialogFragment playerDialogFragment = PlayerDialogFragment.newInstance(mTwoPane, track, trackPosition);
+            PlayerDialogFragment playerDialogFragment = PlayerDialogFragment.newInstance(mTwoPane, track, trackPosition, tracks);
             getFragmentManager().beginTransaction()
                     .hide(topTracksFragment)
                     .add(R.id.fragment, playerDialogFragment, "PlayerDialogFragment")
