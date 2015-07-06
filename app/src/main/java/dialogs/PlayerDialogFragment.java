@@ -3,9 +3,11 @@ package dialogs;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.media.AudioManager;
@@ -21,6 +23,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.oansari.spotifystreamer.Constants;
@@ -70,6 +73,8 @@ public class PlayerDialogFragment extends DialogFragment {
     @InjectView(R.id.seekBar)
     SeekBar mSeekBar;
 
+    BroadcastReceiver mBroadcastReceiver;
+
     private double timeElapsed = 0, finalTime = 0;
 
     private Handler durationHandler = new Handler();
@@ -113,6 +118,23 @@ public class PlayerDialogFragment extends DialogFragment {
         mAlbumNameTextView.setText(mTrack.album.name);
         Picasso.with(getActivity()).load(mTrack.album.images.get(0).url).into(mAlbumArtImageView);
         mPlayButton.setEnabled(false);
+
+        if(mMediaPlayerIntent == null) {
+            mMediaPlayerIntent = new Intent(mContext, MediaPlayerService.class);
+            mMediaPlayerIntent.setAction(Constants.ACTION.STARTFOREGROUND_ACTION);
+            mMediaPlayerIntent.putExtra("TRACK_LIST", new Gson().toJson(mTracks));
+            mMediaPlayerIntent.putExtra("TRACK_POSITION", mTrackPosition);
+            Thread t = new Thread(){
+              public void run(){
+                  getActivity().startService(mMediaPlayerIntent);
+              }
+            };
+            t.start();
+            if (mMediaPlayerService == null) {
+                mMediaPlayerService = new MediaPlayerService(mContext);
+                //mMediaPlayerService.setTrack(mTrack);
+            }
+        }
     }
 
     @Override
@@ -124,10 +146,10 @@ public class PlayerDialogFragment extends DialogFragment {
 
     private void addEvents() {
         if(mMediaPlayerService == null){
-            mMediaPlayerService = new MediaPlayerService();
+            mMediaPlayerService = new MediaPlayerService(mContext);
             mMediaPlayerService.setMediaPlayer();
         }
-        mMediaPlayerService.mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+        mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mediaPlayer) {
                 mSeekBar.setMax(mMediaPlayerService.mMediaPlayer.getDuration());
@@ -303,6 +325,18 @@ public class PlayerDialogFragment extends DialogFragment {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         mContext = getActivity().getApplicationContext();
+        mBroadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Toast.makeText(context, "Broadcast received", Toast.LENGTH_LONG).show();
+            }
+        };
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getActivity().registerReceiver(mBroadcastReceiver, new IntentFilter(Constants.ACTION.PREPARED_ACTION));
     }
 
     private ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -377,7 +411,7 @@ public class PlayerDialogFragment extends DialogFragment {
     @Override
     public void onStart() {
         super.onStart();
-
+        getActivity().registerReceiver(mBroadcastReceiver, new IntentFilter(Constants.ACTION.PREPARED_ACTION));
 
         // safety check
         if (getDialog() == null) {

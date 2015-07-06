@@ -9,8 +9,9 @@ public class Constants {
         public static String PREV_ACTION = "com.oansari.spotifystreamer.prev";
         public static String PLAY_ACTION = "com.oansari.spotifystreamer.play";
         public static String NEXT_ACTION = "com.oansari.spotifystreamer.next";
-        public static String STARTFOREGROUND_ACTION = "com.truiton.foregroundservice.action.startforeground";
-        public static String STOPFOREGROUND_ACTION = "com.truiton.foregroundservice.action.stopforeground";
+        public static String STARTFOREGROUND_ACTION = "com.oansari.spotifystreamer.action.startforeground";
+        public static String STOPFOREGROUND_ACTION = "com.oansari.spotifystreamer.action.stopforeground";
+        public static String PREPARED_ACTION = "com.oansari.spotifystreamer.prepared";
     }
 
     public interface NOTIFICATION_ID {

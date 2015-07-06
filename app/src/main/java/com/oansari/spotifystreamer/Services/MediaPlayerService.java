@@ -59,7 +59,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         mMediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
         mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
-        //mMediaPlayer.setOnPreparedListener(this);
+        mMediaPlayer.setOnPreparedListener(this);
         mMediaPlayer.setOnCompletionListener(this);
         mMediaPlayer.setOnErrorListener(this);
     }
@@ -74,7 +74,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         Uri previewStream = Uri.parse(mTrack.preview_url);
         mMediaPlayer.reset();
         try {
-            mMediaPlayer.setDataSource(mContext.getApplicationContext(), previewStream);
+            mMediaPlayer.setDataSource(getApplicationContext(), previewStream);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -110,7 +110,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
             mTrack = mTracks.tracks.get(mTrackPosition);
         }
         initMediaPlayer();
-        prepareAsync();
+        play();
         if(intent.getAction().equals(Constants.ACTION.STARTFOREGROUND_ACTION)){
             Log.i(LOG_TAG, "Received Start Foreground Intent ");
             Intent notificationIntent = new Intent(this, MediaPlayerService.class);
@@ -165,6 +165,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
             stopForeground(true);
             stopSelf();
         }
+
         return START_STICKY;
     }
 
@@ -187,6 +188,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
 
     @Override
     public void onPrepared(MediaPlayer mediaPlayer) {
+        Intent broadcastIntent = new Intent();
+        broadcastIntent.setAction(Constants.ACTION.PREPARED_ACTION);
+        sendBroadcast(broadcastIntent);
         mMediaPlayer.start();
     }
 }
