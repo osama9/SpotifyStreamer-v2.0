@@ -1,4 +1,4 @@
-package dialogs;
+package com.oansari.spotifystreamer.dialogs;
 
 import android.app.AlertDialog;
 import android.app.Dialog;

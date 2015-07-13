@@ -2,8 +2,8 @@ package com.oansari.spotifystreamer.helpers;
 
 import android.app.Fragment;
 
-import dialogs.ErrorDialogFragment;
-import dialogs.PlayerDialogFragment;
+import com.oansari.spotifystreamer.dialogs.ErrorDialogFragment;
+import com.oansari.spotifystreamer.dialogs.PlayerDialogFragment;
 import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.Tracks;
 

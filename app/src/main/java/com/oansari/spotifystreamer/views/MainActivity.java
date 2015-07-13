@@ -9,7 +9,7 @@ import android.view.MenuItem;
 import com.oansari.spotifystreamer.helpers.DialogHelper;
 import com.oansari.spotifystreamer.R;
 
-import dialogs.PlayerDialogFragment;
+import com.oansari.spotifystreamer.dialogs.PlayerDialogFragment;
 import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.Tracks;

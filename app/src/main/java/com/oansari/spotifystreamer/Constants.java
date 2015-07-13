@@ -12,6 +12,7 @@ public class Constants {
         public static String STARTFOREGROUND_ACTION = "com.oansari.spotifystreamer.action.startforeground";
         public static String STOPFOREGROUND_ACTION = "com.oansari.spotifystreamer.action.stopforeground";
         public static String PREPARED_ACTION = "com.oansari.spotifystreamer.prepared";
+        public static String UPDATE_SEEKBAR_ACTION = "com.oansari.spotifystreamer.updateseekbar";
     }
 
     public interface NOTIFICATION_ID {

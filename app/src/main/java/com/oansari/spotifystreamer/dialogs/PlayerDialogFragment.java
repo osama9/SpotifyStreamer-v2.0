@@ -1,21 +1,17 @@
-package dialogs;
+package com.oansari.spotifystreamer.dialogs;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,12 +25,10 @@ import com.google.gson.Gson;
 import com.oansari.spotifystreamer.Constants;
 import com.oansari.spotifystreamer.helpers.DialogHelper;
 import com.oansari.spotifystreamer.R;
-import com.oansari.spotifystreamer.models.ParcelableTrack;
 import com.oansari.spotifystreamer.services.MediaPlayerService;
 import com.oansari.spotifystreamer.views.TopTracksFragment;
 import com.squareup.picasso.Picasso;
 
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.ButterKnife;
@@ -73,7 +67,6 @@ public class PlayerDialogFragment extends DialogFragment {
     @InjectView(R.id.seekBar)
     SeekBar mSeekBar;
 
-    BroadcastReceiver mBroadcastReceiver;
 
     private double timeElapsed = 0, finalTime = 0;
 
@@ -139,7 +132,7 @@ public class PlayerDialogFragment extends DialogFragment {
 
     @Override
     public void onStop() {
-        durationHandler.removeCallbacks(updateSeekBarTime);
+        //durationHandler.removeCallbacks(updateSeekBarTime);
         //mMediaPlayer.release();
         super.onStop();
     }
@@ -149,48 +142,29 @@ public class PlayerDialogFragment extends DialogFragment {
             mMediaPlayerService = new MediaPlayerService(mContext);
             mMediaPlayerService.setMediaPlayer();
         }
-        mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mediaPlayer) {
-                mSeekBar.setMax(mMediaPlayerService.mMediaPlayer.getDuration());
-                mLeftTimeTextView.setText(String.format("%d min, %d sec", TimeUnit.MILLISECONDS.toMinutes((long)  finalTime),
-                        TimeUnit.MILLISECONDS.toSeconds((long) mMediaPlayerService.mMediaPlayer.getDuration()) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((long) mMediaPlayerService.mMediaPlayer.getDuration()))));
-                mPlayButton.setEnabled(true);
-
-                if(mMediaPlayerIntent == null){
-                    mMediaPlayerIntent = new Intent(mContext, MediaPlayerService.class);
-                    mMediaPlayerIntent.setAction(Constants.ACTION.STARTFOREGROUND_ACTION);
-                    mMediaPlayerIntent.putExtra("TRACK_LIST", new Gson().toJson(mTracks));
-                    mMediaPlayerIntent.putExtra("TRACK_POSITION", mTrackPosition);
-                    getActivity().startService(mMediaPlayerIntent);
-                    if(mMediaPlayerService == null){
-                        mMediaPlayerService = new MediaPlayerService(mContext);
-                        //mMediaPlayerService.setTrack(mTrack);
-                    }
-                }
-
-                if (lastPosition > 0){
-                    mMediaPlayer.seekTo(lastPosition);
-                    play();
-                    mPlayButton.setImageResource(android.R.drawable.ic_media_pause);
-                }
-            }
-        });
 
         mPlayButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                if (mMediaPlayerService.mMediaPlayer.isPlaying()) {
-                    mMediaPlayerService.pause();
+                //if (mMediaPlayerService.mMediaPlayer.isPlaying()) {
+                     mMediaPlayerIntent.setAction(Constants.ACTION.PLAY_ACTION);
+//                    mMediaPlayerIntent.putExtra("TRACK_LIST", new Gson().toJson(mTracks));
+//                    mMediaPlayerIntent.putExtra("TRACK_POSITION", mTrackPosition);
+                    Thread t = new Thread(){
+                        public void run(){
+                            getActivity().startService(mMediaPlayerIntent);
+                        }
+                    };
+                t.start();
                     //pause();
                     mPlayButton.setImageResource(android.R.drawable.ic_media_play);
-                } else {
-                    //play();
-
-                    mMediaPlayerService.play();
-                    mPlayButton.setImageResource(android.R.drawable.ic_media_pause);
-                }
+//                } else {
+//                    //play();
+//
+//                    mMediaPlayerService.play();
+//                    mPlayButton.setImageResource(android.R.drawable.ic_media_pause);
+//                }
             }
 
         });
@@ -209,8 +183,17 @@ public class PlayerDialogFragment extends DialogFragment {
                 }
 
                 dismiss();
-                mMediaPlayerService.stop();
-                mMediaPlayerService.release();
+
+                mMediaPlayerIntent.setAction(Constants.ACTION.PLAY_ACTION);
+                mMediaPlayerIntent.putExtra("TRACK_LIST", new Gson().toJson(mTracks));
+                mMediaPlayerIntent.putExtra("TRACK_POSITION", mTrackPosition);
+                Thread t = new Thread(){
+                    public void run(){
+                        getActivity().startService(mMediaPlayerIntent);
+                    }
+                };
+                t.start();
+
                 updatePlayer();
             }
         });
@@ -243,7 +226,7 @@ public class PlayerDialogFragment extends DialogFragment {
                 mPlayButton.setImageResource(android.R.drawable.ic_media_play);
                 mMediaPlayer.seekTo(0);
                 mSeekBar.setProgress(0);
-                durationHandler.removeCallbacks(updateSeekBarTime);
+                //durationHandler.removeCallbacks(updateSeekBarTime);
             }
         });
 
@@ -290,30 +273,32 @@ public class PlayerDialogFragment extends DialogFragment {
         mMediaPlayer.start();
         timeElapsed = mMediaPlayer.getCurrentPosition();
         mSeekBar.setProgress((int) timeElapsed);
-        durationHandler.postDelayed(updateSeekBarTime, 100);
+        //durationHandler.postDelayed(updateSeekBarTime, 100);
     }
 
-    private Runnable updateSeekBarTime = new Runnable() {
-        @Override
-        public void run() {
-            //get current position
-            timeElapsed = mMediaPlayer.getCurrentPosition();
-            //set seekbar progress
-            mSeekBar.setProgress((int) timeElapsed);
-            //set time remaining
-            double timeRemaining = finalTime - timeElapsed;
-            mElapsedTimeTextView.setText(
-                    String.format("%d min, %d sec",
-                            TimeUnit.MILLISECONDS.toMinutes((long) timeRemaining), (-1) * TimeUnit.MILLISECONDS.toSeconds((long) timeRemaining) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((long) timeRemaining))));
+//    private Runnable updateSeekBarTime = new Runnable() {
+//        @Override
+//        public void run() {
+//            //get current position
+//            timeElapsed = mMediaPlayer.getCurrentPosition();
+//            //set seekbar progress
+//            mSeekBar.setProgress((int) timeElapsed);
+//            //set time remaining
+//            double timeRemaining = finalTime - timeElapsed;
+//            mElapsedTimeTextView.setText(
+//                    String.format("%d min, %d sec",
+//                            TimeUnit.MILLISECONDS.toMinutes((long) timeRemaining), (-1) * TimeUnit.MILLISECONDS.toSeconds((long) timeRemaining) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((long) timeRemaining))));
+//
+//            mLeftTimeTextView.setText(String.format("%d min, %d sec", TimeUnit.MILLISECONDS.toMinutes((long)  (finalTime + timeRemaining)),
+//                    TimeUnit.MILLISECONDS.toSeconds((long) (mMediaPlayer.getDuration() + timeRemaining)) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((long) (mMediaPlayer.getDuration() +timeRemaining) ))));
+//
+//            //repeat yourself that again in 100 miliseconds
+//            durationHandler.postDelayed(this, 100);
+//
+//        }
+//    };
 
-            mLeftTimeTextView.setText(String.format("%d min, %d sec", TimeUnit.MILLISECONDS.toMinutes((long)  (finalTime + timeRemaining)),
-                    TimeUnit.MILLISECONDS.toSeconds((long) (mMediaPlayer.getDuration() + timeRemaining)) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((long) (mMediaPlayer.getDuration() +timeRemaining) ))));
 
-            //repeat yourself that again in 100 miliseconds
-            durationHandler.postDelayed(this, 100);
-
-        }
-    };
 
 
     public void pause(){
@@ -325,48 +310,61 @@ public class PlayerDialogFragment extends DialogFragment {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         mContext = getActivity().getApplicationContext();
-        mBroadcastReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                Toast.makeText(context, "Broadcast received", Toast.LENGTH_LONG).show();
-            }
-        };
+
     }
 
     @Override
     public void onResume() {
         super.onResume();
         getActivity().registerReceiver(mBroadcastReceiver, new IntentFilter(Constants.ACTION.PREPARED_ACTION));
+        getActivity().registerReceiver(SeekbarBrodcastReciver, new IntentFilter(Constants.ACTION.UPDATE_SEEKBAR_ACTION));
     }
 
-    private ServiceConnection mServiceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            //mMediaPlayerService = new MediaPlayerService();
-            //mMediaPlayerService.setTrack(mTrack);
-            mMediaBound = true;
-        }
+    public void prepareView(Context context, Intent intent){
+        int duration = intent.getIntExtra("Duration", 0);
+        Toast.makeText(context, "Broadcast received", Toast.LENGTH_LONG).show();
+        mSeekBar.setMax(duration);
+        mLeftTimeTextView.setText(String.format("%d min, %d sec", TimeUnit.MILLISECONDS.toMinutes((long)  finalTime),
+                TimeUnit.MILLISECONDS.toSeconds((long) duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((long) duration))));
+        mPlayButton.setEnabled(true);
 
+
+        if (lastPosition > 0){
+            mMediaPlayer.seekTo(lastPosition);
+            play();
+            mPlayButton.setImageResource(android.R.drawable.ic_media_pause);
+        }
+    }
+
+    BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
-        public void onServiceDisconnected(ComponentName componentName) {
-            mMediaBound = false;
+        public void onReceive(Context context, Intent intent) {
+            prepareView(context, intent);
         }
     };
 
-//    private void  prepareMediaPlayer(){
-//        try {
-//            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-//        }catch (Exception e){
-//            mMediaPlayer = new MediaPlayer();
-//        }
-//        try {
-//            mMediaPlayer.setDataSource(mContext, previewStream);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//
-//    }
+    BroadcastReceiver SeekbarBrodcastReciver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            timeElapsed = intent.getIntExtra("TIME_ELAPSED", 0);
+            int duration = intent.getIntExtra("Duration",0);
+            //set seekbar progress
+            mSeekBar.setProgress((int) timeElapsed);
+            //set time remaining
+            double timeRemaining = finalTime - timeElapsed;
+            mElapsedTimeTextView.setText(
+                    String.format("%d min, %d sec",
+                            TimeUnit.MILLISECONDS.toMinutes((long) timeRemaining), (-1) * TimeUnit.MILLISECONDS.toSeconds((long) timeRemaining) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((long) timeRemaining))));
+
+            mLeftTimeTextView.setText(String.format("%d min, %d sec", TimeUnit.MILLISECONDS.toMinutes((long)  (finalTime + timeRemaining)),
+                    TimeUnit.MILLISECONDS.toSeconds((long) (duration + timeRemaining)) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((long) (duration +timeRemaining) ))));
+
+            //repeat yourself that again in 100 miliseconds
+
+        }
+    };
+
 
     @Override
     public void onDestroyView() {

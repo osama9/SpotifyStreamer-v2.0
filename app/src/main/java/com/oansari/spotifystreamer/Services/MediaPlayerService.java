@@ -11,6 +11,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.Tracks;
@@ -35,6 +37,8 @@ import kaaes.spotify.webapi.android.models.Tracks;
  */
 public class MediaPlayerService extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {
 
+    private double finalTime = 0;
+    private Handler durationHandler = new Handler();
     private static final String LOG_TAG = "ForegroundService";
     public static MediaPlayer mMediaPlayer;
     private Track mTrack;
@@ -70,7 +74,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     }
 
 
-    public void play(){
+    public void prepareToPlay(){
         Uri previewStream = Uri.parse(mTrack.preview_url);
         mMediaPlayer.reset();
         try {
@@ -100,18 +104,21 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        mMediaPlayer = new MediaPlayer();
 
-
-        if(intent != null){
-            Type type = new TypeToken<Tracks>(){}.getType();
-            mTracks = new Gson().fromJson(intent.getStringExtra("TRACK_LIST"), type);
-            mTrackPosition = intent.getIntExtra("TRACK_POSITION", 0);
-            mTrack = mTracks.tracks.get(mTrackPosition);
-        }
-        initMediaPlayer();
-        play();
         if(intent.getAction().equals(Constants.ACTION.STARTFOREGROUND_ACTION)){
+
+            mMediaPlayer = new MediaPlayer();
+
+
+            if(intent != null){
+                Type type = new TypeToken<Tracks>(){}.getType();
+                mTracks = new Gson().fromJson(intent.getStringExtra("TRACK_LIST"), type);
+                mTrackPosition = intent.getIntExtra("TRACK_POSITION", 0);
+                mTrack = mTracks.tracks.get(mTrackPosition);
+            }
+            initMediaPlayer();
+            prepareToPlay();
+
             Log.i(LOG_TAG, "Received Start Foreground Intent ");
             Intent notificationIntent = new Intent(this, MediaPlayerService.class);
             notificationIntent.setAction(Constants.ACTION.MAIN_ACTION);
@@ -155,8 +162,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
             Log.i(LOG_TAG, "Clicked Play");
             if(mMediaPlayer.isPlaying())
                 pause();
-            else
-                play();
+            else {
+                mMediaPlayer.start();
+                durationHandler.postDelayed(updateSeekBarTime, 100);
+            }
         } else if (intent.getAction().equals(Constants.ACTION.NEXT_ACTION)) {
             Log.i(LOG_TAG, "Clicked Next");
         } else if (intent.getAction().equals(
@@ -168,6 +177,21 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
 
         return START_STICKY;
     }
+
+    private Runnable updateSeekBarTime = new Runnable() {
+        @Override
+        public void run() {
+            Intent seekbarIntent = new Intent();
+            seekbarIntent.setAction(Constants.ACTION.UPDATE_SEEKBAR_ACTION);
+            //get current position
+            seekbarIntent.putExtra("TIME_ELAPSED", mMediaPlayer.getCurrentPosition());
+            seekbarIntent.putExtra("Duration", mMediaPlayer.getDuration());
+            sendBroadcast(seekbarIntent);
+            //repeat yourself that again in 100 miliseconds
+            durationHandler.postDelayed(this, 100);
+
+        }
+    };
 
 //    @Override
 //    public boolean onUnbind(Intent intent) {
@@ -190,7 +214,12 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     public void onPrepared(MediaPlayer mediaPlayer) {
         Intent broadcastIntent = new Intent();
         broadcastIntent.setAction(Constants.ACTION.PREPARED_ACTION);
+        broadcastIntent.putExtra("Duration", mMediaPlayer.getDuration());
         sendBroadcast(broadcastIntent);
-        mMediaPlayer.start();
+        //mMediaPlayer.start();
     }
+
+
+
+
 }
